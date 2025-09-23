@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="p-6 max-w-2xl mx-auto">
+    <h2>Supprimer ce matériel ?</h2>
+<p>{{ materiel }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Oui, supprimer</button>
+</form>
+<a href="{% url 'materiel_list' %}">⬅ Annuler</a>
+</div>
+
+{% endblock %}

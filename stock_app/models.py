@@ -1,0 +1,156 @@
+from django.db import models
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django.core.exceptions import ValidationError
+
+
+class Utilisateur(models.Model):
+    nom = models.CharField(max_length=40)
+
+    def __str__(self):
+        return self.nom
+
+
+class Categorie(models.Model):
+    label = models.CharField(max_length=30, unique=True)
+
+    def __str__(self):
+        return self.label
+
+
+class Materiel(models.Model):
+    categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE)
+    fabricant = models.CharField(max_length=20)
+    description = models.CharField(max_length=100)
+    modal = models.CharField(max_length=100, default="modèle")
+    serie = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.fabricant} - {self.description}"
+
+
+class Demande(models.Model):
+    prenom = models.CharField(max_length=40, default="prenom")
+    nom = models.CharField(max_length=40, default="nom")
+    email = models.EmailField(max_length=50, default="admin@moov-africa.sotelma")
+    direction = models.CharField(max_length=10, default="direction")   # ✅ corrigé
+    departement = models.CharField(max_length=10, default="departement") # ✅ corrigé
+    service = models.CharField(max_length=10, default="service")  # ✅ corrigé
+    centre = models.CharField(max_length=10, default="centre")    # ✅ corrigé
+    motif = models.TextField(max_length=255, default="motif")
+    materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
+    quantite = models.PositiveIntegerField()
+    statut = models.CharField(
+        max_length=20,
+        choices=[
+            ("en_attente", "En attente"),
+            ("acceptee", "Acceptée"),
+            ("refusee", "Refusée"),
+        ],
+        default="en_attente",
+    )
+    date_demande = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Demande de {self.materiel.fabricant} par {self.prenom} {self.nom}"
+
+
+class Approvisionnement(models.Model):
+    date_appro = models.DateTimeField(auto_now_add=True)
+    utilisateur = models.ForeignKey(Utilisateur, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"Approvisionnement du {self.date_appro.strftime('%Y-%m-%d %H:%M')}"
+
+
+class ApproMateriel(models.Model):
+    materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
+    appro = models.ForeignKey(Approvisionnement, on_delete=models.CASCADE)
+    quantite = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.quantite} x {self.materiel}"
+
+
+class Attribution(models.Model):
+    date_attri = models.DateTimeField(auto_now_add=True)
+    ref = models.CharField(max_length=20, default="La référence")  # ✅ corrigé
+    usager = models.CharField(max_length=50, default="usager")
+    utilisateur = models.ForeignKey(Utilisateur, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"Attribution du {self.date_attri.strftime('%Y-%m-%d %H:%M')}"
+
+
+class AttribuMateriel(models.Model):
+    materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
+    attri = models.ForeignKey(Attribution, on_delete=models.CASCADE)
+    quantite = models.PositiveIntegerField()
+
+    def clean(self):
+        """Empêche d’attribuer plus que le stock disponible"""
+        stock, _ = Stock.objects.get_or_create(materiel=self.materiel)
+        if self.pk:  # cas modification
+            ancienne_qte = AttribuMateriel.objects.get(pk=self.pk).quantite
+        else:
+            ancienne_qte = 0
+
+        nouvelle_qte = self.quantite - ancienne_qte
+        if nouvelle_qte > stock.quantite:
+            raise ValidationError(
+                f"Stock insuffisant ! Disponible : {stock.quantite}, demandé : {nouvelle_qte}"
+            )
+
+    def save(self, *args, **kwargs):
+        self.clean()  # validation avant enregistrement
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.quantite} x {self.materiel}"
+
+
+class Stock(models.Model):
+    materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
+    quantite = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.materiel} : {self.quantite} en stock"
+
+
+# === SIGNALS ===
+@receiver(post_save, sender=ApproMateriel)
+def update_stock_on_appro(sender, instance, created, **kwargs):
+    """Mise à jour optimisée du stock après approvisionnement"""
+    stock, _ = Stock.objects.get_or_create(materiel=instance.materiel)
+    if created:
+        stock.quantite += instance.quantite
+    else:
+        ancienne = ApproMateriel.objects.get(pk=instance.pk).quantite
+        stock.quantite += instance.quantite - ancienne
+    stock.save()
+
+
+@receiver(post_delete, sender=ApproMateriel)
+def update_stock_on_delete_appro(sender, instance, **kwargs):
+    stock, _ = Stock.objects.get_or_create(materiel=instance.materiel)
+    stock.quantite -= instance.quantite
+    stock.save()
+
+
+@receiver(post_save, sender=AttribuMateriel)
+def update_stock_on_attri(sender, instance, created, **kwargs):
+    """Mise à jour optimisée du stock après attribution"""
+    stock, _ = Stock.objects.get_or_create(materiel=instance.materiel)
+    if created:
+        stock.quantite -= instance.quantite
+    else:
+        ancienne = AttribuMateriel.objects.get(pk=instance.pk).quantite
+        stock.quantite -= instance.quantite - ancienne
+    stock.save()
+
+
+@receiver(post_delete, sender=AttribuMateriel)
+def update_stock_on_delete_attri(sender, instance, **kwargs):
+    stock, _ = Stock.objects.get_or_create(materiel=instance.materiel)
+    stock.quantite += instance.quantite
+    stock.save()

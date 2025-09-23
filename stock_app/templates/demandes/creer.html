@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-6 max-w-4xl mx-auto">
+  <!-- Header -->
+  <h1 class="text-2xl font-bold text-[#004F9F] mb-6 flex items-center gap-2">
+    ➕ Nouvelle Demande
+  </h1>
+
+  <!-- Messages Django -->
+  {% if messages %}
+    <div class="mb-4 space-y-2">
+      {% for message in messages %}
+        <div class="
+          px-4 py-2 rounded-lg text-sm font-medium shadow-md
+          {% if message.tags == 'error' %}
+              bg-red-100 text-red-800 border border-red-300
+          {% elif message.tags == 'success' %}
+              bg-[#E6F0FA] text-[#004F9F] border border-[#B3D4F2]
+          {% elif message.tags == 'warning' %}
+              bg-yellow-100 text-yellow-800 border border-yellow-300
+          {% else %}
+              bg-blue-100 text-blue-800 border border-blue-300
+          {% endif %}
+        ">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Formulaire -->
+  <form method="post" class="space-y-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+    {% csrf_token %}
+
+    <!-- Erreurs globales -->
+    {% if form.errors %}
+      <div class="bg-red-100 text-red-700 p-3 rounded-lg border border-red-300 mb-4">
+        ⚠️ Corrigez les erreurs ci-dessous
+      </div>
+    {% endif %}
+
+    <!-- Champs -->
+    <div class="space-y-4">
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">
+            {{ field.label }}
+          </label>
+          {{ field }}
+          {% if field.errors %}
+            <p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Boutons -->
+    <div class="flex justify-between items-center pt-4">
+      <a href="{% url 'liste_demandes' %}" 
+         class="bg-[#F58220] hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow transition">
+        ⬅ Retour
+      </a>
+      <button type="submit" 
+              class="bg-[#004F9F] hover:bg-blue-900 text-white px-6 py-2 rounded-lg shadow transition">
+        ✅ Enregistrer
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

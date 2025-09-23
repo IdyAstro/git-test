@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-green-700 text-white flex flex-col">
+    <div class="p-6 text-2xl font-bold border-b border-green-500">Gestion Matériel</div>
+    <nav class="flex-1 p-4">
+      <ul class="space-y-4">
+        <li><a href="{% url 'dashboard' %}" class="block p-2 rounded hover:bg-green-600">🏠 Tableau de bord</a></li>
+        <li><a href="{% url 'liste_categories' %}" class="block p-2 rounded hover:bg-green-600">📂 Categorie</a></li>
+        <li><a href="{% url 'materiel_list' %}" class="block p-2 rounded hover:bg-green-600">📦 Matériels</a></li>
+        <li><a href="{% url 'liste_appros' %}" class="block p-2 rounded hover:bg-green-600">🛒 Approvisionnements</a></li>
+        <li><a href="{% url 'liste_demandes' %}" class="block p-2 rounded hover:bg-green-600">📑 Demandes</a></li>
+        <li><a href="{% url 'liste_attributions'%}" class="block p-2 rounded hover:bg-green-600">🛠 Attributions</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1">
+    <!-- Header -->
+    <header class="bg-white shadow p-4 flex justify-between">
+      <h1 class="text-xl font-bold">Tableau de bord</h1>
+      <div class="flex justify-between">
+        <span class="font-semibold">👤 {{request.user}}</span>
+      <a href="{% url 'deconnexion'%}" class="block p-2 rounded hover:bg-red-600">Logout</a>
+      </div>
+      
+      
+    </header>
+
+    <!-- Stats 
+    <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold">📦 Matériels</h2>
+        <p class="text-2xl font-bold mt-2">{{ total_materiels }}</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold">📝 Demandes en attente</h2>
+        <p class="text-2xl font-bold mt-2 text-yellow-600">{{ demandes_en_attente }}</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold">✅ Demandes validées</h2>
+        <p class="text-2xl font-bold mt-2 text-green-600">{{ demandes_validees }}</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold">❌ Demandes refusées</h2>
+        <p class="text-2xl font-bold mt-2 text-red-600">{{ demandes_refusees }}</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold">🛠 Attributions</h2>
+        <p class="text-2xl font-bold mt-2">{{ total_attributions }}</p>
+      </div>
+    </div>
+    -->
+    <!-- Derniers approvisionnements -->
+    
+    {% block content %}
+
+    {% endblock  %}
+  </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Titre -->
+    <h1 class="text-2xl font-bold text-[#004F9F] mb-6">📂 Liste des catégories</h1>
+
+    <!-- Bouton ajouter -->
+    <div class="mb-4">
+        <a href="{% url 'ajouter_categorie' %}" 
+           class="bg-[#F58220] text-white px-4 py-2 rounded-lg shadow hover:bg-orange-500 transition-colors duration-300">
+           ➕ Ajouter une catégorie
+        </a>
+    </div>
+
+    <!-- Messages Django -->
+    {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+                <div class="
+                    px-4 py-2 rounded-xl text-sm font-medium shadow-md
+                    {% if message.tags == 'success' %}
+                        bg-green-100 text-green-800 border border-green-300
+                    {% endif %}
+                ">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Tableau -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full">
+            <thead class="bg-[#004F9F]">
+                <tr>
+                    <th class="py-3 px-4 border-b text-left text-white">#</th>
+                    <th class="py-3 px-4 border-b text-left text-white">Label</th>
+                    <th class="py-3 px-4 border-b text-center text-white">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2 px-4 border-b">{{ cat.id }}</td>
+                    <td class="py-2 px-4 border-b">{{ cat.label }}</td>
+                    <td class="py-2 px-4 border-b text-center space-x-2">
+                        <a href="{% url 'modifier_categorie' cat.id %}" 
+                           class="bg-[#F58220] rounded-2xl px-2 text-white font-medium hover:bg-orange-500 transition-colors duration-300">
+                           Modifier
+                        </a>
+                        <a href="{% url 'supprimer_categorie' cat.id %}" 
+                           class="bg-red-600 rounded-2xl px-2 text-white font-medium hover:bg-red-500 transition-colors duration-300"
+                           onclick="return confirm('Voulez-vous vraiment supprimer ?')">
+                            Supprimer
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center py-4 text-gray-500">Aucune catégorie trouvée</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

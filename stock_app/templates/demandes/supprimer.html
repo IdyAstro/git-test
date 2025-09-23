@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+   
+    <div class="overflow-x-auto mx-5 bg-white rounded-lg shadow mt-6">
+        <h1 class="text-center"> Etes vous sûr de vouloir supprimer la demande N°{{demande.pk}} de {{demande.prenom}} {{demande.nom}} de la {{demande.direction}}</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex justify-center py-3 px-2 ">
+                <button type="submit" class=" bg-red-600 rounded mx-5 text-white p-2">OUI</button>
+                <a href="{% url 'liste_demandes'%}" class="bg-green-500 rounded p-2 mx-5 text-white">NON</a>
+            </div>
+        </form>
+        
+    </div>
+   
+        
+        
+   
+
+{% endblock %}

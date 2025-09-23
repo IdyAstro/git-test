@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+
+    <title>Document</title>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-[#004A8D] via-blue-700 to-[#F16521] text-slate-800 dark:text-slate-100 flex items-center justify-center">
+    <div class="w-full max-w-md px-4">
+        <form method="post" action="{% url 'inscription' %}" 
+              class="bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl 
+                     rounded-2xl shadow-2xl ring-1 ring-black/10 
+                     dark:ring-white/10 p-6 md:p-8 space-y-6">
+
+            {% csrf_token %}
+            <h1 class="text-2xl font-bold text-center text-[#004A8D] dark:text-[#F16521]">
+                Inscription
+            </h1>
+
+            <div class="space-y-4">
+                {{ forms.as_p }}
+                
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-[#004A8D] hover:bg-[#F16521] 
+                           text-white font-semibold py-2 px-4 rounded-xl 
+                           shadow-md transition-all duration-300 ease-in-out">
+                S'enregistrer
+            </button>
+
+            <p class="text-center text-sm">
+                Déjà inscrit ? 
+                <a href="{% url 'connexion' %}" 
+                   class="font-semibold text-[#F16521] hover:text-[#004A8D] transition">
+                    Se connecter
+                </a>
+            </p>
+        </form>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-6 max-w-6xl mx-auto">
+  
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-[#004F9F]">📋 Historique des Attributions</h1>
+    <a href="{% url 'nouvelle_attribution' %}" 
+       class="bg-[#F58220] hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow transition">
+      ➕ Nouvelle Acquisition
+    </a>
+  </div>
+
+  <!-- Messages Django -->
+  {% if messages %}
+    <div class="mb-4 space-y-2">
+      {% for message in messages %}
+        <div class="
+          px-4 py-2 rounded-lg text-sm font-medium shadow-md
+          {% if message.tags == 'success' %}
+              bg-[#E6F0FA] text-[#004F9F] border border-[#B3D4F2]
+          {% elif message.tags == 'error' %}
+              bg-red-100 text-red-800 border border-red-300
+          {% elif message.tags == 'warning' %}
+              bg-yellow-100 text-yellow-800 border border-yellow-300
+          {% else %}
+              bg-blue-100 text-blue-800 border border-blue-300
+          {% endif %}
+        ">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Tableau -->
+  <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-[#004F9F] text-white text-left">
+          <th class="p-3">📅 Date</th>
+          <th class="p-3">👤 Usager</th>
+          <th class="p-3">🔖 Référence</th>
+          <th class="p-3">💼 Matériels attribués</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {% for attribution in attributions %}
+          <tr class="hover:bg-gray-50 transition">
+            <td class="p-3 text-gray-700">{{ attribution.date_attri|date:"d/m/Y H:i" }}</td>
+            <td class="p-3 font-medium text-gray-900">{{ attribution.usager }}</td>
+            <td class="p-3 text-gray-600">{{ attribution.ref }}</td>
+            <td class="p-3">
+              <ul class="space-y-1">
+                {% for item in attribution.attribumateriel_set.all %}
+                  <li class="flex items-center gap-2">
+                    <span class="text-gray-800">{{ item.materiel }}</span>
+                    <span class="bg-[#F58220] text-white text-xs px-2 py-1 rounded-full">
+                      {{ item.quantite }}
+                    </span>
+                  </li>
+                {% endfor %}
+              </ul>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="p-6 text-center text-gray-500 italic">
+              🚫 Aucune attribution enregistrée.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
