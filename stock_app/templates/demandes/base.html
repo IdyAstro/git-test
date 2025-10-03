@@ -3,69 +3,126 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard</title>
+  <title>SOTELMA</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" 
+    integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" 
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body class="bg-gray-100">
 
 <div class="flex min-h-screen">
   <!-- Sidebar -->
-  <aside class="w-64 bg-green-700 text-white flex flex-col">
-    <div class="p-6 text-2xl font-bold border-b border-green-500">Gestion Matériel</div>
-    <nav class="flex-1 p-4">
+  <aside class="fixed top-0 left-0 h-screen w-64 bg-[#004F9F] text-white flex flex-col">
+    <!-- Logo -->
+    <div class="p-6 flex flex-col items-center border-b border-[#F58220]">
+      <span class="text-xl font-bold">Gestion Matériel</span>
+    </div>
+
+    <!-- Menu -->
+    <nav class="flex-1 p-4 overflow-y-auto">
       <ul class="space-y-4">
-        <li><a href="{% url 'dashboard' %}" class="block p-2 rounded hover:bg-green-600">🏠 Tableau de bord</a></li>
-        <li><a href="{% url 'liste_categories' %}" class="block p-2 rounded hover:bg-green-600">📂 Categorie</a></li>
-        <li><a href="{% url 'materiel_list' %}" class="block p-2 rounded hover:bg-green-600">📦 Matériels</a></li>
-        <li><a href="{% url 'liste_appros' %}" class="block p-2 rounded hover:bg-green-600">🛒 Approvisionnements</a></li>
-        <li><a href="{% url 'liste_demandes' %}" class="block p-2 rounded hover:bg-green-600">📑 Demandes</a></li>
-        <li><a href="{% url 'liste_attributions'%}" class="block p-2 rounded hover:bg-green-600">🛠 Attributions</a></li>
+
+        <!-- Tableau de bord -->
+        <li>
+          <a href="{% url 'dashboard' %}" class="block p-2 rounded  transition-colors duration-300">
+            <i class="fa-solid fa-chart-line"></i> Tableau de bord
+          </a>
+        </li>
+
+        <!-- Catégories -->
+        <li x-data="{open:false}">
+          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
+            <span><i class="fa-solid fa-layer-group"></i> Catégories</span>
+            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+          </button>
+          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+            <li><a href="{% url 'liste_categories' %}" class="block px-2 py-1 rounded hover:bg-[#F58220]">Liste</a></li>
+            <li><a href="#" class="block px-2 py-1 rounded hover:bg-[#F58220]">Ajouter</a></li>
+          </ul>
+        </li>
+
+        <!-- Matériels -->
+        <li x-data="{open:false}">
+          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
+            <span><i class="fa-solid fa-house-laptop"></i> MATERIEL</span>
+            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+          </button>
+          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+            <li><a href="{% url 'materiel_list' %}" class="block px-2 py-1 rounded hover:bg-[#F58220]">LISTE</a></li>
+            <li><a href="#" class="block px-2 py-1 rounded hover:bg-[#F58220]">Ajouter</a></li>
+          </ul>
+        </li>
+
+        <!-- Approvisionnements -->
+        <li x-data="{open:false}">
+          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
+            <span><i class="fa-solid fa-cart-shopping"></i> RECUPERATION </span>
+            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+          </button>
+          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+            <li><a href="{% url 'liste_appros' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>HISTORIQUE</a></li>
+            <li><a href="{% url 'nouvel_approvisionnement' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>ENREGISTRER UNE RECEPTION </a></li>
+            <li><a href="{% url 'rapport_approvisionnement' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>RAPPORT</a></li>
+          </ul>
+        </li>
+
+        <!-- Demandes -->
+        <li x-data="{open:false}">
+          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded bg-[#F58220] hover:bg-[#F58220]">
+            <span><i class="fa-solid fa-file-lines"></i> DEMANDES</span>
+            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+          </button>
+          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+            <li><a href="{% url 'listes_exhaussive' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>GESTION</a></li>
+            <li><a href="{% url 'creer_demande' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>CREATION</a></li>
+            <li><a href="#" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>RAPPORT</a></li>
+          </ul>
+        </li>
+
+        <!-- Attributions -->
+        <li x-data="{open:false}">
+          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
+            <span><i class="fa-solid fa-screwdriver-wrench"></i> DEPLOIEMENT </span>
+            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+          </button>
+          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+            <li><a href="{% url 'liste_attributions' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>CONFIGURATION</a></li>
+            <li><a href="{% url 'nouvelle_attribution' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>SAUVEGARDE</a></li>
+            <li><a href="{% url 'rapport_complet' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>RAPPORT</a></li>
+          </ul>
+        </li>
+
+        <!-- Déconnexion -->
+        <li class="text-center">
+          <a href="{% url 'deconnexion'%}" class="block p-2 rounded bg-red-500 mt-20 hover:bg-red-600 transition">
+            <i class="fa-solid fa-right-from-bracket"></i> Déconnexion
+          </a>
+        </li>
+
       </ul>
     </nav>
   </aside>
 
   <!-- Main content -->
-  <main class="flex-1">
+  <main class="flex-1 flex flex-col ml-64">
     <!-- Header -->
-    <header class="bg-white shadow p-4 flex justify-between">
-      <h1 class="text-xl font-bold">Tableau de bord</h1>
-      <div class="flex justify-between">
-        <span class="font-semibold">👤 {{request.user}}</span>
-      <a href="{% url 'deconnexion'%}" class="block p-2 rounded hover:bg-red-600">Logout</a>
+    <header class="bg-white shadow p-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-[#004F9F]">DEMANDES</h1>
+      <div class="flex items-center space-x-3">
+        <span class="font-semibold text-[#004F9F]">👤 {{request.user}}</span>
+        <a href="{% url 'deconnexion'%}" class="bg-[#F58220] text-white px-3 py-1 rounded hover:bg-orange-600 transition">
+          Logout
+        </a>
       </div>
-      
-      
     </header>
 
-    <!-- Stats 
-    <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-lg font-semibold">📦 Matériels</h2>
-        <p class="text-2xl font-bold mt-2">{{ total_materiels }}</p>
-      </div>
-      <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-lg font-semibold">📝 Demandes en attente</h2>
-        <p class="text-2xl font-bold mt-2 text-yellow-600">{{ demandes_en_attente }}</p>
-      </div>
-      <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-lg font-semibold">✅ Demandes validées</h2>
-        <p class="text-2xl font-bold mt-2 text-green-600">{{ demandes_validees }}</p>
-      </div>
-      <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-lg font-semibold">❌ Demandes refusées</h2>
-        <p class="text-2xl font-bold mt-2 text-red-600">{{ demandes_refusees }}</p>
-      </div>
-      <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-lg font-semibold">🛠 Attributions</h2>
-        <p class="text-2xl font-bold mt-2">{{ total_attributions }}</p>
-      </div>
-    </div>
-    -->
-    <!-- Derniers approvisionnements -->
-    
-    {% block content %}
-
-    {% endblock  %}
+    <!-- Page Content -->
+    <section class="flex-1 p-6 bg-gray-50">
+      {% block content %}
+      {% endblock %}
+    </section>
   </main>
 </div>
 

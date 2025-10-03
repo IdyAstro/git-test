@@ -1,71 +1,112 @@
-{% extends "base.html" %}
+{% extends "demandes/base.html" %}
 
 {% block content %}
-<div class="bg-gray-100 min-h-screen py-10 px-6">
-  
-  <!-- Titre principal -->
-  <div class="text-center mb-8">
-    <h1 class="text-3xl font-bold text-green-700">
-      📄 Détail de la demande N°{{ demande.pk }}
-    </h1>
+<div class="p-6 max-w-4xl mx-auto">
+
+  <!-- En-tête -->
+  <div class="mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-[#004F9F]">📝 Détail de la demande</h1>
+    <a href="{% url 'listes_exhaussive' %}" 
+       class="bg-[#004F9F] hover:bg-blue-900 text-white px-4 py-2 rounded-lg shadow transition">
+       ⬅ Retour à la liste
+    </a>
   </div>
 
-  <!-- Informations personnelles -->
-  <div class="bg-white shadow-md rounded-xl p-6 mb-6 border-l-4 border-green-600">
-    <h2 class="text-xl font-semibold text-green-700 mb-4 text-center">
-      👤 Informations personnelles
-    </h2>
-    <div class="space-y-2 text-gray-700">
-      <p><span class="font-medium">Prénom :</span> {{ demande.prenom }}</p>
-      <p><span class="font-medium">Nom :</span> {{ demande.nom }}</p>
-      <p><span class="font-medium">Email :</span> {{ demande.email }}</p>
-    </div>
-  </div>
-
-  <!-- Informations professionnelles -->
-  <div class="bg-white shadow-md rounded-xl p-6 mb-6 border-l-4 border-green-600">
-    <h2 class="text-xl font-semibold text-green-700 mb-4 text-center">
-      💼 Informations professionnelles
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-      <p><span class="font-medium">Direction :</span> {{ demande.direction }}</p>
-      <p><span class="font-medium">Département :</span> {{ demande.departement }}</p>
-      <p><span class="font-medium">Service :</span> {{ demande.service }}</p>
-      <p><span class="font-medium">Centre :</span> {{ demande.centre }}</p>
-    </div>
-  </div>
-
-  <!-- Autres informations -->
-  <div class="bg-white shadow-md rounded-xl p-6 mb-6 border-l-4 border-green-600">
-    <h2 class="text-xl font-semibold text-green-700 mb-4 text-center">
-      📝 Autres informations
-    </h2>
-    <div class="space-y-2 text-gray-700">
-      <p><span class="font-medium">Matériel demandé :</span> {{ demande.materiel }}</p>
-      <p><span class="font-medium">Quantité demandée :</span> {{ demande.quantite }}</p>
-      <p><span class="font-medium">Statut :</span> 
-        <span class="px-2 py-1 rounded text-white 
-          {% if demande.statut == 'acceptee' %} bg-green-600 
-          {% elif demande.statut == 'refusee' %} bg-red-600 
-          {% else %} bg-yellow-500 {% endif %}">
-          {{ demande.statut }}
+  <!-- Card principale -->
+  <div class="bg-white shadow-lg rounded-2xl p-6 border border-gray-200">
+    
+    <!-- Informations principales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Nom & Prénom</h2>
+        <p class="text-lg font-bold text-[#004F9F]">{{ demande.prenom }} {{ demande.nom }}</p>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Matériel</h2>
+        <p class="text-lg text-gray-800">{{ demande.materiel.categorie }} - {{ demande.materiel.description }}</p>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Quantité</h2>
+        <p class="text-lg font-semibold text-[#F58220]">{{ demande.quantite }}</p>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Statut</h2>
+        <span class="px-3 py-1 rounded-full 
+                     {% if demande.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
+                     {% elif demande.statut == 'valide' %}bg-green-100 text-green-800
+                     {% elif demande.statut == 'rejete' %}bg-red-100 text-red-800
+                     {% endif %} font-semibold">
+          {{ demande.get_statut_display }}
         </span>
-      </p>
-      <p><span class="font-medium">Date de la demande :</span> {{ demande.date_demande }}</p>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Direction</h2>
+        <p class="text-gray-800">{{ demande.direction }}</p>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Département</h2>
+        <p class="text-gray-800">{{ demande.departement }}</p>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Service</h2>
+        <p class="text-gray-800">{{ demande.service }}</p>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Centre</h2>
+        <p class="text-gray-800">{{ demande.centre }}</p>
+      </div>
+      <div class="md:col-span-2">
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Motif</h2>
+        <p class="text-gray-800">{{ demande.motif }}</p>
+      </div>
+      <div class="md:col-span-2">
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Email</h2>
+        <p class="text-gray-800">{{ demande.email }}</p>
+      </div>
+      <div class="md:col-span-2">
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Date de la demande</h2>
+        <p class="text-gray-800">{{ demande.date_demande|date:"d/m/Y H:i" }}</p>
+      </div>
     </div>
+
+    <!-- Actions -->
+    <div class="flex space-x-4 mt-4">
+      <a href="{% url 'modifier_demande' demande.pk %}" 
+         class="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg shadow transition">
+        ✏️ Modifier
+      </a>
+      <form method="POST" action="{% url 'supprimer_demande' demande.pk %}" 
+            onsubmit="return confirm('Voulez-vous vraiment supprimer cette demande ?')">
+        {% csrf_token %}
+        <button type="submit" 
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow transition">
+          🗑 Supprimer
+        </button>
+      </form>
+    </div>
+
   </div>
 
-  <!-- Bouton retour -->
-  <div class="text-center">
-    <a href="{% url 'liste_demandes' %}" 
-       class="inline-block bg-green-700 hover:bg-green-800 text-white font-medium px-6 py-2 rounded-lg shadow-md transition">
-      ⬅ Retour à la liste
-    </a>
-      <a href="{% url 'modifier_demande' demande.pk %}" 
-       class="inline-block bg-yellow-300 hover:bg-yellow-400 text-white font-medium px-6 py-2 rounded-lg shadow-md transition">
-        Mettre à jour
-    </a>
+  <!-- Section dernières demandes (optionnelle) -->
+  {% if demandes %}
+  <div class="mt-10">
+    <h2 class="text-2xl font-bold text-[#004F9F] mb-4">🕓 4 dernières demandes</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      {% for d in demandes %}
+        <div class="bg-white shadow rounded-lg p-4 hover:shadow-md transition">
+          <p class="font-bold text-[#004F9F]">{{ d.prenom }} {{ d.nom }}</p>
+          <p class="text-sm text-gray-600">📌 {{ d.materiel.categorie }} - {{ d.materiel.description }}</p>
+          <p class="text-sm">Quantité : <span class="font-semibold">{{ d.quantite }}</span></p>
+          <p class="text-sm">Statut : {{ d.get_statut_display }}</p>
+          <a href="{% url 'detail_demande' d.pk %}" 
+             class="inline-block mt-2 text-sm text-[#F58220] hover:underline">
+             ➡ Voir détail
+          </a>
+        </div>
+      {% endfor %}
+    </div>
   </div>
+  {% endif %}
 
 </div>
 {% endblock %}

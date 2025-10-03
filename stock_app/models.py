@@ -23,21 +23,44 @@ class Materiel(models.Model):
     fabricant = models.CharField(max_length=20)
     description = models.CharField(max_length=100)
     modal = models.CharField(max_length=100, default="modèle")
-    serie = models.CharField(max_length=50, null=True, blank=True)
-
+    
     def __str__(self):
-        return f"{self.fabricant} - {self.description}"
+        return f"{self.categorie} -{self.fabricant} - {self.modal}"
 
 
 class Demande(models.Model):
-    prenom = models.CharField(max_length=40, default="prenom")
-    nom = models.CharField(max_length=40, default="nom")
-    email = models.EmailField(max_length=50, default="admin@moov-africa.sotelma")
-    direction = models.CharField(max_length=10, default="direction")   # ✅ corrigé
-    departement = models.CharField(max_length=10, default="departement") # ✅ corrigé
-    service = models.CharField(max_length=10, default="service")  # ✅ corrigé
-    centre = models.CharField(max_length=10, default="centre")    # ✅ corrigé
-    motif = models.TextField(max_length=255, default="motif")
+    DIRECTIONS = [
+        ("DG", "Direction Générale"),
+        ("DRH", "Direction Ressources Humaines"),
+        ("DAF", "Direction Administratif Financier"),
+        ("DIS", "Direction Infrastructure Système"),
+        ("DCO", "Direction Commerciale"),
+    ]
+    DEPARTEMENTS = [
+        ("DSI", "Département Système Information"),
+        ("DRF", "Département Réseaux Fixe"),
+        ("DRM", "Département Réseaux Mobile"),
+        
+    ]
+    SERVICES = [
+        ("SPI", "Service Production Informatique"),
+        ("SIS", "Systèmes"),
+        ("SUP", "Support"),
+    ]
+    CENTRES = [
+        ("CBRG", "Centre Bureautique Reseau Global"),
+        ("KAY", "Kayes"),
+        ("GAO", "Gao"),
+    ]
+
+    prenom = models.CharField(max_length=40)
+    nom = models.CharField(max_length=40)
+    email = models.EmailField(max_length=50)
+    direction = models.CharField(max_length=100, choices=DIRECTIONS)
+    departement = models.CharField(max_length=100, choices=DEPARTEMENTS)
+    service = models.CharField(max_length=100, choices=SERVICES)
+    centre = models.CharField(max_length=100, choices=CENTRES)
+    motif = models.TextField(max_length=255)
     materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
     quantite = models.PositiveIntegerField()
     statut = models.CharField(
@@ -73,11 +96,55 @@ class ApproMateriel(models.Model):
 
 
 class Attribution(models.Model):
+    DIRECTIONS = [
+        ("DG", "Direction Générale"),
+        ("DRH", "Direction Ressources Humaines"),
+        ("DAF", "Direction Administratif Financier"),
+        ("DIS", "Direction Infrastructure Système"),
+        ("DCO", "Direction Commerciale"),
+    ]
+    DEPARTEMENTS = [
+        ("DSI", "Département Système Information"),
+        ("DRF", "Département Réseaux Fixe"),
+        ("DRM", "Département Réseaux Mobile"),
+        
+    ]
+    SERVICES = [
+        ("SPI", "Service Production Informatique"),
+        ("SIS", "Systèmes"),
+        ("SUP", "Support"),
+    ]
     date_attri = models.DateTimeField(auto_now_add=True)
-    ref = models.CharField(max_length=20, default="La référence")  # ✅ corrigé
-    usager = models.CharField(max_length=50, default="usager")
+    ref = models.CharField(max_length=20,null=True,blank=True)
+    prenom = models.CharField(max_length=40,null=True,blank=True)
+    nom = models.CharField(max_length=40,null=True,blank=True)
+    email = models.EmailField(max_length=50,null=True,blank=True)
+    direction = models.CharField(max_length=100, choices=DIRECTIONS,null=True,blank=True)
+    departement = models.CharField(max_length=100, choices=DEPARTEMENTS,null=True,blank=True)
+    service = models.CharField(max_length=100, choices=SERVICES,null=True,blank=True)
+    locality = models.CharField(max_length=20,null=True,blank=True)
+    serie = models.CharField(max_length=50, null=True, blank=True)
+    etat = models.CharField(
+        max_length=20,
+        choices=[
+            ("bon", "BON"),
+            ("pass", "PASSABLE"),
+            ("endo", "ENDOMMAGER"),
+        ],
+        default="bon", )
+    
     utilisateur = models.ForeignKey(Utilisateur, on_delete=models.SET_NULL, null=True)
+    
+    demande = models.ForeignKey(
+        Demande, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="Demande à l’origine de cette attribution"
+    )
 
+    approvisionnement = models.ForeignKey(
+        Approvisionnement, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="Approvisionnement dont provient le matériel"
+    )
+    
     def __str__(self):
         return f"Attribution du {self.date_attri.strftime('%Y-%m-%d %H:%M')}"
 
@@ -90,7 +157,7 @@ class AttribuMateriel(models.Model):
     def clean(self):
         """Empêche d’attribuer plus que le stock disponible"""
         stock, _ = Stock.objects.get_or_create(materiel=self.materiel)
-        if self.pk:  # cas modification
+        if self.pk:
             ancienne_qte = AttribuMateriel.objects.get(pk=self.pk).quantite
         else:
             ancienne_qte = 0
@@ -102,7 +169,7 @@ class AttribuMateriel(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        self.clean()  # validation avant enregistrement
+        self.clean()
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -120,7 +187,6 @@ class Stock(models.Model):
 # === SIGNALS ===
 @receiver(post_save, sender=ApproMateriel)
 def update_stock_on_appro(sender, instance, created, **kwargs):
-    """Mise à jour optimisée du stock après approvisionnement"""
     stock, _ = Stock.objects.get_or_create(materiel=instance.materiel)
     if created:
         stock.quantite += instance.quantite
@@ -139,7 +205,6 @@ def update_stock_on_delete_appro(sender, instance, **kwargs):
 
 @receiver(post_save, sender=AttribuMateriel)
 def update_stock_on_attri(sender, instance, created, **kwargs):
-    """Mise à jour optimisée du stock après attribution"""
     stock, _ = Stock.objects.get_or_create(materiel=instance.materiel)
     if created:
         stock.quantite -= instance.quantite

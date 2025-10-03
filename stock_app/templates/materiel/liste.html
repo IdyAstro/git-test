@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "materiel/base.html" %}
 
 {% block content %}
 <div class="p-6">
@@ -7,7 +7,7 @@
     <h2 class="text-2xl font-bold text-[#004F9F]">📦 Liste des matériels</h2>
     <a href="{% url 'materiel_create' %}" 
        class="bg-[#F58220] hover:bg-orange-600 text-white px-4 py-2 rounded-xl shadow transition">
-       ➕ Ajouter un matériel
+       <i class="fa-solid fa-plus"></i>
     </a>
   </div>
 
@@ -32,12 +32,12 @@
   <!-- Formulaire de recherche -->
   <form method="get" class="flex items-center gap-2 mb-6">
     <input type="text" name="q" 
-           placeholder="🔍 Rechercher par fabricant ou description" 
+           placeholder="Rechercher par fabricant ou description" 
            value="{{ request.GET.q }}"
            class="border border-gray-300 rounded-xl px-3 py-2 w-72 focus:ring-2 focus:ring-[#004F9F] focus:border-[#004F9F] shadow-sm">
     <button type="submit" 
             class="bg-[#004F9F] hover:bg-blue-900 text-white px-4 py-2 rounded-xl shadow transition">
-      Filtrer
+      <i class="fa-solid fa-magnifying-glass"></i>
     </button>
   </form>
 
@@ -50,7 +50,7 @@
           <th class="px-6 py-3">Fabricant</th>
           <th class="px-6 py-3">Description</th>
           <th class="px-6 py-3">Modèle</th>
-          <th class="px-6 py-3">Numéro de série</th>
+          
           <th class="px-6 py-3 text-center">Actions</th>
         </tr>
       </thead>
@@ -61,13 +61,13 @@
           <td class="px-6 py-4">{{ m.fabricant }}</td>
           <td class="px-6 py-4">{{ m.description }}</td>
           <td class="px-6 py-4">{{ m.modal }}</td>
-          <td class="px-6 py-4">{{ m.serie }}</td>
+          
           <td class="px-6 py-4 flex justify-center gap-2">
             <a href="{% url 'materiel_update' m.id %}" 
-               class="bg-[#F58220] text-white px-3 py-1 rounded-lg hover:bg-orange-600 transition">Modifier</a>
+               class="bg-[#F58220] text-white px-3 py-1 rounded-lg hover:bg-orange-600 transition"><i class="fa-solid fa-pen"></i></a>
             <a href="{% url 'materiel_delete' m.id %}" 
                class="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition" 
-               onclick="return confirm('Voulez-vous vraiment supprimer ?')">Supprimer</a>
+               onclick="return confirm('Voulez-vous vraiment supprimer ?')"><i class="fa-solid fa-trash"></i></a>
           </td>
         </tr>
         {% empty %}

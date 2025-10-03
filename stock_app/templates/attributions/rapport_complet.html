@@ -1,0 +1,138 @@
+{% extends "attributions/base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+
+  <!-- Titre + Export -->
+  <div class="flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-[#004F9F]">📑 RAPPORT GLOBAL DES DEPLOIEMENTS</h1>
+    <div>
+      <a href="?export=excel" 
+         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+        📥 Exporter en Excel
+      </a>
+    </div>
+  </div>
+
+  <!-- Section 1 : Synthèse par catégorie -->
+  <div class="bg-white shadow rounded-lg p-4">
+    <h2 class="text-lg font-semibold text-[#004F9F] mb-3">1️⃣ Synthèse par Catégorie</h2>
+    <table class="table-auto border-collapse border border-gray-300 w-full text-sm">
+      <thead class="bg-[#F58220] text-white">
+        <tr>
+          <th class="border p-2">Catégorie</th>
+          <th class="border p-2">Approvisionné</th>
+          <th class="border p-2">Attribué</th>
+          <th class="border p-2">Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in categories %}
+         
+         
+        <tr class="hover:bg-gray-100">
+          <td class="border p-2">{{ c.label }}</td>
+          <td class="border p-2 text-center">{{ c.total_appro|default:0 }}</td>
+          <td class="border p-2 text-center">{{ c.total_attri|default:0 }}</td>
+          
+          <td class="border p-2 text-center font-semibold text-green-600">{{ c.stock|default:0 }}</td>
+          
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 2 : Répartition par direction -->
+  <div class="bg-white shadow rounded-lg p-4">
+    <h2 class="text-lg font-semibold text-[#004F9F] mb-3">2️⃣ Deploiement par Direction</h2>
+    <table class="table-auto border-collapse border border-gray-300 w-full text-sm">
+      <thead class="bg-[#F58220] text-white">
+        <tr>
+          <th class="border p-2">Direction</th>
+          <th class="border p-2">Quantité Deploiyer</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in directions %}
+        <tr class="hover:bg-gray-100">
+          <td class="border p-2">{{ d.direction }}</td>
+          <td class="border p-2 text-center font-semibold">{{ d.total_attribue|default:0 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 3 : Détails des attributions -->
+  <div class="bg-white shadow rounded-lg p-4">
+    <h2 class="text-lg font-semibold text-[#004F9F] mb-3">3️⃣ Détails des Deploiement</h2>
+    <div class="overflow-x-auto">
+      <table class="table-auto border-collapse border border-gray-300 w-full text-sm">
+        <thead class="bg-[#F58220] text-white">
+          <tr>
+            <th class="border p-2">Date</th>
+            <th class="border p-2">Réf</th>
+            <th class="border p-2">Employé</th>
+            <th class="border p-2">Email</th>
+            <th class="border p-2">Direction</th>
+            <th class="border p-2">Département</th>
+            <th class="border p-2">Service</th>
+            <th class="border p-2">Matériel</th>
+            <th class="border p-2">Quantité</th>
+            <th class="border p-2">État</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for attri in attributions %}
+            {% for mat in attri.attribumateriel_set.all %}
+            <tr class="hover:bg-gray-100">
+              <td class="border p-2">{{ attri.date_attri|date:"Y-m-d H:i" }}</td>
+              <td class="border p-2">{{ attri.ref }}</td>
+              <td class="border p-2">{{ attri.prenom }} {{ attri.nom }}</td>
+              <td class="border p-2">{{ attri.email }}</td>
+              <td class="border p-2">{{ attri.direction }}</td>
+              <td class="border p-2">{{ attri.departement }}</td>
+              <td class="border p-2">{{ attri.service }}</td>
+              <td class="border p-2">{{ mat.materiel }}</td>
+              <td class="border p-2 text-center">{{ mat.quantite }}</td>
+              <td class="border p-2 font-semibold">{{ attri.etat }}</td>
+            </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- Section 4 : Matériels anciens à remplacer -->
+<div class="bg-white p-6 rounded shadow mt-8">
+  <h2 class="text-xl font-bold text-red-600 mb-4">⚠️ Equipements anciens à remplacer (+3 ans)</h2>
+  {% if materiels_a_remplacer %}
+    <table class="min-w-full border border-gray-200 text-sm">
+      <thead class="bg-red-100">
+        <tr>
+          <th class="px-4 py-2 border">Nom</th>
+          <th class="px-4 py-2 border">Catégorie</th>
+          <th class="px-4 py-2 border">Date d’acquisition</th>
+          <th class="px-4 py-2 border">État</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in materiels_a_remplacer %}
+        <tr class="hover:bg-gray-50">
+          <td class="border px-4 py-2">{{ m.nom }}</td>
+          <td class="border px-4 py-2">{{ m.categorie.label }}</td>
+          <td class="border px-4 py-2">{{ m.date_acquisition|date:"d/m/Y" }}</td>
+          <td class="border px-4 py-2">{{ m.etat }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-gray-500">✅ Aucun matériel ancien à remplacer.</p>
+  {% endif %}
+</div>
+
+
+</div>
+{% endblock %}

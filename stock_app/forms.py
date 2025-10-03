@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import *
+from .import views
 
 class CustomUserCreationForm(UserCreationForm):
     password1 = forms.CharField(
@@ -41,7 +42,7 @@ from .models import Materiel
 class MaterielForm(forms.ModelForm):
     class Meta:
         model = Materiel
-        fields = ['categorie', 'fabricant', 'description','modal','serie']
+        fields = ['categorie', 'fabricant', 'description','modal']
         
 
 
@@ -60,8 +61,7 @@ ApproMaterielFormSet = inlineformset_factory(
     Approvisionnement,
     ApproMateriel,
     fields=['materiel', 'quantite'],
-    extra=3,
-    
+    extra=2,
     can_delete=False
 )
 
@@ -74,56 +74,96 @@ from .models import Demande
 from django import forms
 from .models import Demande
 
+from django import forms
+from .models import Demande
+
 class DemandeForm(forms.ModelForm):
     class Meta:
         model = Demande
         fields = [
             "prenom", "nom", "email", "direction", "departement",
-            "service", "centre","motif", "materiel", "quantite", "statut"
+            "service", "centre", "motif", "materiel", "quantite", "statut"
         ]
         widgets = {
-            "prenom": forms.TextInput(attrs={"class": "border rounded w-full p-2"}),
-            "nom": forms.TextInput(attrs={"class": "border rounded w-full p-2"}),
-            "email": forms.EmailInput(attrs={"class": "border rounded w-full p-2"}),
-            "direction": forms.TextInput(attrs={"class": "border rounded w-full p-2"}),
-            "departement": forms.TextInput(attrs={"class": "border rounded w-full p-2"}),
-            "service": forms.TextInput(attrs={"class": "border rounded w-full p-2"}),
-            "centre": forms.TextInput(attrs={"class": "border rounded w-full p-2"}),
-            "motif": forms.TextInput(attrs={"class": "border rounded w-full p-2"}),
-            "materiel": forms.Select(attrs={"class": "border rounded w-full p-2"}),
-            "quantite": forms.NumberInput(attrs={"class": "border rounded w-full p-2"}),
-            "statut": forms.Select(attrs={"class": "border rounded w-full p-2"}),
+            "prenom": forms.TextInput(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+                "placeholder": "Prénom"
+            }),
+            "nom": forms.TextInput(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+                "placeholder": "Nom"
+            }),
+            "email": forms.EmailInput(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+                "placeholder": "Adresse email"
+            }),
+            "direction": forms.RadioSelect(attrs={
+                "class": "space-y-2 text-gray-700"
+            }),
+            "departement": forms.RadioSelect(attrs={
+                "class": "space-y-2 text-gray-700"
+            }),
+            "service": forms.RadioSelect(attrs={
+                "class": "space-y-2 text-gray-700"
+            }),
+            "centre": forms.RadioSelect(attrs={
+                "class": "space-y-2 text-gray-700"
+            }),
+            "motif": forms.Textarea(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+                "rows": 3,
+                "placeholder": "Expliquez le motif de votre demande"
+            }),
+            "materiel": forms.Select(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200"
+            }),
+            "quantite": forms.NumberInput(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+                "placeholder": "Quantité"
+            }),
+            "statut": forms.Select(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200"
+            }),
         }
-
 
 
 from django import forms
 from .models import Attribution, AttribuMateriel, Materiel
 
+# stock_app/forms.py
+from django import forms
+from .models import Attribution, AttribuMateriel
+
+# forms.py
+from django import forms
+from django.forms import inlineformset_factory
+from .models import Attribution, AttribuMateriel, Approvisionnement, ApproMateriel, Materiel
+
 class AttributionForm(forms.ModelForm):
     class Meta:
         model = Attribution
-        fields = ["utilisateur","ref","usager"]
+        fields = [
+            'ref','prenom','nom','email','direction','departement','service',
+            'locality','etat','utilisateur','demande','approvisionnement'
+        ]
         widgets = {
-            "ref":forms.TextInput(attrs={
-                'class':'border rounded my-3 p-2',
-                'placeholder':'Ex : BKO-S-V-SPI-OO1'
-            }),
-            "usager":forms.TextInput(attrs={
-                'class':'border rounded my-3 p-2'
-            })
-
-
+            'direction': forms.RadioSelect(),
+            'departement': forms.RadioSelect(),
+            'service': forms.RadioSelect(),
+            'etat': forms.RadioSelect(),
+            'utilisateur': forms.Select(),
+            'demande': forms.Select(attrs={"class":"block w-full border rounded p-2"}),
+            'approvisionnement': forms.Select(attrs={"class":"block w-full border rounded p-2"}),
         }
-
-
 
 class AttribuMaterielForm(forms.ModelForm):
     class Meta:
         model = AttribuMateriel
-        fields = ["materiel", "quantite"]
-        widgets = {
-            "materiel": forms.Select(attrs={"class": "border p-2 rounded w-full"}),
-            "quantite": forms.NumberInput(attrs={"class": "border p-2 rounded w-full", "min": 1}),
-        }
-        
+        fields = ['materiel','quantite']
+AttribuMaterielFormSet = inlineformset_factory(
+    Attribution,
+    AttribuMateriel,
+    form=AttribuMaterielForm,
+    extra=1,  # on créera les formulaires dynamiquement côté vue
+    can_delete=False
+)

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "demandes/base.html" %}
 
 {% block content %}
 <div class="p-6 max-w-4xl mx-auto">
@@ -6,7 +6,7 @@
   <h1 class="text-2xl font-bold text-[#004F9F] mb-6 flex items-center gap-2">
     ➕ Nouvelle Demande
   </h1>
-
+  
   <!-- Messages Django -->
   {% if messages %}
     <div class="mb-4 space-y-2">
@@ -29,8 +29,8 @@
     </div>
   {% endif %}
 
-  <!-- Formulaire -->
-  <form method="post" class="space-y-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+  <!-- Formulaire Wizard -->
+  <form method="post" class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
     {% csrf_token %}
 
     <!-- Erreurs globales -->
@@ -40,32 +40,130 @@
       </div>
     {% endif %}
 
-    <!-- Champs -->
-    <div class="space-y-4">
-      {% for field in form %}
-        <div>
-          <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">
-            {{ field.label }}
-          </label>
-          {{ field }}
-          {% if field.errors %}
-            <p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>
-          {% endif %}
-        </div>
-      {% endfor %}
+    <!-- Progress bar -->
+    <div class="flex justify-between mb-6">
+      <div class="step-indicator flex-1 text-center">
+        <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center bg-[#004F9F] text-white">1</div>
+        <p class="text-sm mt-2">Infos perso</p>
+      </div>
+      <div class="step-indicator flex-1 text-center">
+        <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center bg-gray-300 text-gray-600">2</div>
+        <p class="text-sm mt-2">Infos pro</p>
+      </div>
+      <div class="step-indicator flex-1 text-center">
+        <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center bg-gray-300 text-gray-600">3</div>
+        <p class="text-sm mt-2">Autres infos</p>
+      </div>
     </div>
 
-    <!-- Boutons -->
-    <div class="flex justify-between items-center pt-4">
-      <a href="{% url 'liste_demandes' %}" 
-         class="bg-[#F58220] hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow transition">
-        ⬅ Retour
-      </a>
-      <button type="submit" 
-              class="bg-[#004F9F] hover:bg-blue-900 text-white px-6 py-2 rounded-lg shadow transition">
+    <!-- Slides -->
+    <div id="step-1" class="step">
+      <h2 class="text-lg font-semibold text-[#004F9F] mb-4 border-b pb-2">🧑 Informations personnelles</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for field in form %}
+          {% if field.name in "prenom,nom,email" %}
+            <div>
+              <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div id="step-2" class="step hidden">
+      <h2 class="text-lg font-semibold text-[#004F9F] mb-4 border-b pb-2">🏢 Informations professionnelles</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for field in form %}
+          {% if field.name in "direction,departement,service,centre" %}
+            <div>
+              <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div id="step-3" class="step hidden">
+      <h2 class="text-lg font-semibold text-[#004F9F] mb-4 border-b pb-2">📄 Autres informations</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for field in form %}
+          {% if field.name in "motif,materiel,quantite,statut" %}
+            <div>
+              <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Boutons navigation -->
+    <div class="flex justify-between items-center pt-6">
+      <button type="button" id="prevBtn" class="hidden bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg shadow transition">
+        ⬅️ Précédent
+      </button>
+
+      <button type="button" id="nextBtn" class="bg-[#004F9F] hover:bg-blue-900 text-white px-6 py-2 rounded-lg shadow transition ml-auto">
+        Suivant ➡️
+      </button>
+
+      <button type="submit" id="submitBtn" class="hidden bg-green-600 hover:bg-green-800 text-white px-6 py-2 rounded-lg shadow transition ml-auto">
         ✅ Enregistrer
       </button>
     </div>
   </form>
 </div>
+
+<!-- Script -->
+<script>
+  let currentStep = 1;
+  const totalSteps = 3;
+
+  const steps = document.querySelectorAll(".step");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  const indicators = document.querySelectorAll(".step-indicator div");
+
+  function showStep(step) {
+    steps.forEach((el, i) => {
+      el.classList.toggle("hidden", i !== step - 1);
+      indicators[i].classList.toggle("bg-[#004F9F]", i === step - 1);
+      indicators[i].classList.toggle("text-white", i === step - 1);
+      indicators[i].classList.toggle("bg-gray-300", i !== step - 1);
+      indicators[i].classList.toggle("text-gray-600", i !== step - 1);
+    });
+
+    prevBtn.classList.toggle("hidden", step === 1);
+    nextBtn.classList.toggle("hidden", step === totalSteps);
+    submitBtn.classList.toggle("hidden", step !== totalSteps);
+  }
+
+  nextBtn.addEventListener("click", () => {
+    if (currentStep < totalSteps) {
+      currentStep++;
+      showStep(currentStep);
+    }
+  });
+
+  prevBtn.addEventListener("click", () => {
+    if (currentStep > 1) {
+      currentStep--;
+      showStep(currentStep);
+    }
+  });
+
+  showStep(currentStep);
+</script>
 {% endblock %}

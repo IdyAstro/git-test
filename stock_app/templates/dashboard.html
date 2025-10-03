@@ -7,19 +7,19 @@
     <!-- Statistiques globales -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div class="bg-white shadow-md rounded-2xl p-4 text-center ">
-            <h2 class="text-lg font-semibold">Stock total</h2>
+            <h2 class="text-lg font-semibold uppercase">Stock total</h2>
             <p class="text-2xl font-bold text-green-600">{{ total_stock }}</p>
         </div>
         <div class="bg-white shadow-md rounded-2xl p-4 text-center">
-            <h2 class="text-lg font-semibold">Matériels</h2>
+            <h2 class="text-lg font-semibold uppercase">Matériels</h2>
             <p class="text-2xl font-bold">{{ total_materiels }}</p>
         </div>
         <div class="bg-white shadow-md rounded-2xl p-4 text-center">
-            <h2 class="text-lg font-semibold">Approvisionnements</h2>
+            <h1 class="text-lg font-semibold uppercase">RECEPTION</h>
             <p class="text-2xl font-bold text-blue-600">{{ total_appros }}</p>
         </div>
         <div class="bg-white shadow-md rounded-2xl p-4 text-center">
-            <h2 class="text-lg font-semibold">Attributions</h2>
+            <h2 class="text-lg font-semibold uppercase">Attributions</h2>
             <p class="text-2xl font-bold text-red-600">{{ total_attris }}</p>
         </div>
     </div>
@@ -27,21 +27,31 @@
     <!-- Graphiques -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white shadow-md rounded-2xl p-4">
-            <h2 class="font-semibold mb-2">Répartition du stock par catégorie</h2>
+            <h2 class="font-semibold mb-2 uppercase">Répartition du stock par catégorie</h2>
             <canvas id="stockCategorie"></canvas>
         </div>
         <div class="bg-white shadow-md rounded-2xl p-4">
-            <h2 class="font-semibold mb-2">Demandes par statut</h2>
+            <h2 class="font-semibold mb-2 uppercase">Demandes par statut</h2>
             <canvas id="demandesStatut"></canvas>
         </div>
     </div>
-
+    <!-- Stock par materiel -->
+    <div class="mt-6 bg-white shadow-md rounded-2xl p-4">
+        <h2 class="font-semibold mb-4 text-green-600 uppercase"> Stock superieure a 5</h2>
+        <ul>
+            {% for i in stock_par_materiel %}
+                <li>{{i.materiel.categorie}} {{i.materiel.fabricant}} {{ i.materiel.description }} {{i.materiel.modal}} : <span class="font-bold">{{ i.quantite }}</span></li>
+            {% empty %}
+                <li>Aucun stock</li>
+            {% endfor %}
+        </ul>
+    </div>
     <!-- Stock critique -->
     <div class="mt-6 bg-white shadow-md rounded-2xl p-4">
-        <h2 class="font-semibold mb-4 text-red-600">⚠️ Stock critique</h2>
+        <h2 class="font-semibold mb-4 text-red-600 uppercase">⚠️ Stock critique</h2>
         <ul>
             {% for s in stock_critique %}
-                <li>{{ s.materiel.description }} : <span class="font-bold">{{ s.quantite }}</span></li>
+                <li>{{s.materiel.categorie}} {{s.materiel.fabricant}} {{ s.materiel.description }} {{s.materiel.modal}} : <span class="font-bold">{{ s.quantite }}</span></li>
             {% empty %}
                 <li>Aucun stock critique</li>
             {% endfor %}

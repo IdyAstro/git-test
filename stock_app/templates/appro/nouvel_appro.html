@@ -1,0 +1,56 @@
+{% extends "appro/base.html" %}
+
+{% block content %}
+
+
+<form method="post" class="space-y-8 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+  {% csrf_token %}
+
+  <!-- Choix utilisateur -->
+  <div>
+    <h2 class="text-lg font-semibold text-gray-700 mb-3">👤 Utilisateur</h2>
+    <select name="utilisateur" class="border rounded-lg p-2 w-full">
+      {% for u in utilisateurs %}
+        <option value="{{ u.id }}">{{ u.nom }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Liste des matériels -->
+  <div>
+    <h2 class="text-lg font-semibold text-gray-700 mb-3">📦 Matériels</h2>
+    <table class="w-full border border-gray-300 rounded-lg">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="p-2">✔️</th>
+          <th class="p-2 text-left">Matériel</th>
+          <th class="p-2">Quantité</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in materiels %}
+          <tr class="border-t">
+            <td class="p-2 text-center">
+              <input type="checkbox" name="check_{{ m.id }}">
+            </td>
+            <td class="p-2">{{ m.categorie }} - {{ m.description }}</td>
+            <td class="p-2">
+              <input type="number" name="quantite_{{ m.id }}" min="0" class="border rounded p-1 w-24">
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Boutons -->
+  <div class="pt-6 flex justify-between">
+    <a href="{% url 'liste_appros' %}" class="bg-red-600 text-white px-5 py-2 rounded-lg shadow hover:bg-red-700">
+      🔙 Retour
+    </a>
+    <button type="submit" class="bg-green-700 text-white px-6 py-2 rounded-lg shadow hover:bg-green-800">
+      ✅ Enregistrer
+    </button>
+  </div>
+</form>
+{% endblock  %}
