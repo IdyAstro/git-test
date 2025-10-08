@@ -1,12 +1,12 @@
-{% extends "attributions/base.html" %}
-{% load widget_tweaks %}   {# Obligatoire pour add_class #}
+{% extends "base.html" %}
+{% load widget_tweaks %}
 
 {% block content %}
 <div class="p-6 max-w-5xl mx-auto">
 
   <!-- Header -->
   <div class="mb-6 flex items-center justify-between">
-    <h1 class="text-3xl font-bold text-[#004F9F] flex items-center gap-2">📦 Nouvelle Attribution</h1>
+    <h1 class="text-3xl font-bold text-[#004F9F] flex items-center gap-2">📦 NOUVEAU DEPLOYEMENT</h1>
     <a href="{% url 'liste_attributions' %}" 
        class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl shadow transition">
        📑 Historique
@@ -76,7 +76,7 @@
           <div class="grid md:grid-cols-2 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm">
             <div class="flex flex-col">
               <label class="mb-1 font-medium text-gray-600">{{ form.materiel.label_tag }}</label>
-              {{ form.materiel|add_class:"border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#004F9F] focus:border-[#004F9F]" }}
+              {{ form.materiel|add_class:"materiel-select border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#004F9F] focus:border-[#004F9F]" }}
               {% if form.materiel.errors %}
                 <span class="text-red-600 text-sm mt-1">{{ form.materiel.errors|striptags }}</span>
               {% endif %}
@@ -96,7 +96,7 @@
     <!-- Slide 3 : Validation -->
     <div id="step-3" class="step hidden">
       <h2 class="text-lg font-semibold text-[#004F9F] mb-4 border-b pb-2">✅ Validation</h2>
-      <p class="text-gray-600 mb-6">Vérifiez bien vos informations avant d’enregistrer cet deploiement.</p>
+      <p class="text-gray-600 mb-6">Vérifiez bien vos informations avant d’enregistrer cet déploiement.</p>
     </div>
 
     <!-- Navigation -->
@@ -117,11 +117,10 @@
   </form>
 </div>
 
-<!-- Script -->
+<!-- Script Wizard + AJAX -->
 <script>
   let currentStep = 1;
   const totalSteps = 3;
-
   const steps = document.querySelectorAll(".step");
   const prevBtn = document.getElementById("prevBtn");
   const nextBtn = document.getElementById("nextBtn");
@@ -157,5 +156,41 @@
   });
 
   showStep(currentStep);
+
+  // === AJAX pour filtrer les matériels ===
+  document.addEventListener("DOMContentLoaded", function () {
+    const approSelect = document.getElementById("id_approvisionnement");
+    const materielSelects = document.querySelectorAll(".materiel-select");
+
+    if (approSelect) {
+      approSelect.addEventListener("change", function () {
+        const approId = this.value;
+
+        materielSelects.forEach(select => {
+          select.innerHTML = "<option value=''>Chargement...</option>";
+        });
+
+        if (approId) {
+          fetch(`/ajax/materiels/${approId}/`)
+            .then(response => response.json())
+            .then(data => {
+              materielSelects.forEach(select => {
+                select.innerHTML = "<option value=''>--- Sélectionnez ---</option>";
+                data.forEach(m => {
+                  const option = document.createElement("option");
+                  option.value = m.id;
+                  option.textContent = m.text;
+                  select.appendChild(option);
+                });
+              });
+            });
+        } else {
+          materielSelects.forEach(select => {
+            select.innerHTML = "<option value=''>--- Choisissez un approvisionnement ---</option>";
+          });
+        }
+      });
+    }
+  });
 </script>
 {% endblock %}

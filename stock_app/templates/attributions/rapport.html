@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6 max-w-7xl mx-auto">
+
+  <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-8">
+    📋 RAPPORT DES ATTRIBUTIONS
+  </h1>
+
+  <!-- Filtres -->
+  <form method="get" class="mb-6 bg-white shadow rounded-lg p-4 flex flex-col md:flex-row items-center gap-4">
+    {% for field in radio_fields %}
+      <div>
+        <label class="block text-sm font-medium text-gray-700">{{ field.verbose_name }}</label>
+        <input type="text" name="{{ field.name }}" value="{{ current_filters[field.name] }}" class="border rounded-lg p-2">
+      </div>
+    {% endfor %}
+    <div>
+      <label for="annee" class="block text-sm font-medium text-gray-700">Année</label>
+      <input type="number" name="annee" value="{{ current_filters.annee|default:now.year }}" class="border rounded-lg p-2">
+    </div>
+    <div class="flex gap-3 mt-4 md:mt-6">
+      <button type="submit" class="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">
+        🔎 Filtrer
+      </button>
+      <a href="?export=excel{% for f,v in current_filters.items %}{% if v %}&{{ f }}={{ v }}{% endif %}{% endfor %}" 
+         class="px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+         ⬇️ Exporter Excel
+      </a>
+    </div>
+  </form>
+
+  <!-- Tableau -->
+  <div class="bg-white shadow-lg rounded-2xl overflow-hidden">
+    <div class="p-4 border-b bg-gradient-to-r from-green-600 to-green-400">
+      <h2 class="text-lg font-semibold text-white">Attributions</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="table-auto w-full text-sm text-left">
+        <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+          <tr>
+            <th class="px-4 py-2">Date</th>
+            <th class="px-4 py-2">Direction</th>
+            <th class="px-4 py-2">Département</th>
+            <th class="px-4 py-2">Service</th>
+            <th class="px-4 py-2">Utilisateur</th>
+            <th class="px-4 py-2">Technicien</th>
+            <th class="px-4 py-2">Matériel</th>
+            <th class="px-4 py-2">Quantité</th>
+            <th class="px-4 py-2">État</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for attri in attributions %}
+            {% for ligne in attri.attribumateriel_set.all %}
+            <tr class="hover:bg-gray-50 transition">
+              <td class="px-4 py-2">{{ attri.date_attri|date:"Y-m-d" }}</td>
+              <td class="px-4 py-2">{{ attri.direction }}</td>
+              <td class="px-4 py-2">{{ attri.departement }}</td>
+              <td class="px-4 py-2">{{ attri.service }}</td>
+              <td class="px-4 py-2">{{ attri.prenom }} {{ attri.nom }}</td>
+              <td class="px-4 py-2">{{ attri.utilisateur.nom }}</td>
+              <td class="px-4 py-2">{{ ligne.materiel }}</td>
+              <td class="px-4 py-2 font-semibold text-green-600">{{ ligne.quantite }}</td>
+              <td class="px-4 py-2">{{ attri.get_etat_display }}</td>
+            </tr>
+            {% endfor %}
+          {% empty %}
+            <tr>
+              <td colspan="9" class="px-4 py-4 text-center text-gray-500 italic">
+                Aucun résultat pour ce filtre.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="mt-4">
+    {% if attributions.has_other_pages %}
+      <div class="flex justify-center gap-2">
+        {% if attributions.has_previous %}
+          <a href="?page={{ attributions.previous_page_number }}{% for f,v in current_filters.items %}{% if v %}&{{ f }}={{ v }}{% endif %}{% endfor %}"
+             class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">&laquo; Précédent</a>
+        {% endif %}
+        <span class="px-3 py-1 bg-gray-100 rounded">{{ attributions.number }}</span>
+        {% if attributions.has_next %}
+          <a href="?page={{ attributions.next_page_number }}{% for f,v in current_filters.items %}{% if v %}&{{ f }}={{ v }}{% endif %}{% endfor %}"
+             class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Suivant &raquo;</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

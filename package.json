@@ -1,0 +1,23 @@
+{
+  "name": "sotelma",
+  "version": "1.0.0",
+  "description": "\"# git-test\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IdyAstro/git-test.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IdyAstro/git-test/issues"
+  },
+  "homepage": "https://github.com/IdyAstro/git-test#readme",
+  "devDependencies": {
+    "tailwindcss": "^4.1.14"
+  }
+}

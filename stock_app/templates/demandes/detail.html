@@ -1,108 +1,132 @@
-{% extends "demandes/base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
-<div class="p-6 max-w-4xl mx-auto">
+<div class="p-4 md:p-6 max-w-5xl mx-auto">
 
   <!-- En-tête -->
-  <div class="mb-6 flex justify-between items-center">
-    <h1 class="text-3xl font-bold text-[#004F9F]">📝 Détail de la demande</h1>
+  <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+    <h1 class="text-3xl md:text-4xl font-extrabold text-[#004F9F] flex items-center gap-2">
+      📝 Détail de la demande
+    </h1>
     <a href="{% url 'listes_exhaussive' %}" 
-       class="bg-[#004F9F] hover:bg-blue-900 text-white px-4 py-2 rounded-lg shadow transition">
+       class="bg-[#004F9F] hover:bg-blue-900 text-white px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-sm md:text-base">
        ⬅ Retour à la liste
     </a>
   </div>
 
   <!-- Card principale -->
-  <div class="bg-white shadow-lg rounded-2xl p-6 border border-gray-200">
-    
+  <div class="bg-white shadow-xl rounded-3xl p-6 md:p-8 border border-gray-100 hover:shadow-2xl transition duration-300">
+
     <!-- Informations principales -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
       <div>
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Nom & Prénom</h2>
-        <p class="text-lg font-bold text-[#004F9F]">{{ demande.prenom }} {{ demande.nom }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Nom & Prénom</h2>
+        <p class="text-lg md:text-2xl font-bold text-[#004F9F]">{{ demande.prenom }} {{ demande.nom }}</p>
       </div>
+
       <div>
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Matériel</h2>
-        <p class="text-lg text-gray-800">{{ demande.materiel.categorie }} - {{ demande.materiel.description }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Matériel</h2>
+        <p class="text-md md:text-lg text-gray-700">{{ demande.materiel.categorie }} - {{ demande.materiel.description }}</p>
       </div>
+
       <div>
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Quantité</h2>
-        <p class="text-lg font-semibold text-[#F58220]">{{ demande.quantite }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Quantité</h2>
+        <p class="text-md md:text-lg font-semibold text-[#F58220]">{{ demande.quantite }}</p>
       </div>
+
       <div>
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Statut</h2>
-        <span class="px-3 py-1 rounded-full 
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Statut</h2>
+        <span class="px-3 py-1 rounded-full font-semibold
                      {% if demande.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
-                     {% elif demande.statut == 'valide' %}bg-green-100 text-green-800
-                     {% elif demande.statut == 'rejete' %}bg-red-100 text-red-800
-                     {% endif %} font-semibold">
+                     {% elif demande.statut == 'acceptee' %}bg-green-100 text-green-800
+                     {% elif demande.statut == 'refusee' %}bg-red-100 text-red-800
+                     {% endif %}">
           {{ demande.get_statut_display }}
         </span>
       </div>
+
       <div>
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Direction</h2>
-        <p class="text-gray-800">{{ demande.direction }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Direction</h2>
+        <p class="text-gray-700">{{ demande.direction.nom }}</p>
       </div>
+
       <div>
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Département</h2>
-        <p class="text-gray-800">{{ demande.departement }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Département</h2>
+        <p class="text-gray-700">{{ demande.departement.nom }}</p>
       </div>
+
       <div>
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Service</h2>
-        <p class="text-gray-800">{{ demande.service }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Service</h2>
+        <p class="text-gray-700">{{ demande.service.nom }}</p>
       </div>
+
       <div>
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Centre</h2>
-        <p class="text-gray-800">{{ demande.centre }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Téléphone</h2>
+        <p class="text-gray-700">{{ demande.tel }}</p>
       </div>
+
       <div class="md:col-span-2">
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Motif</h2>
-        <p class="text-gray-800">{{ demande.motif }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Motif</h2>
+        <p class="text-gray-700">{{ demande.motif }}</p>
       </div>
+
       <div class="md:col-span-2">
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Email</h2>
-        <p class="text-gray-800">{{ demande.email }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Email</h2>
+        <p class="text-gray-700">{{ demande.email }}</p>
       </div>
+
       <div class="md:col-span-2">
-        <h2 class="text-xl font-semibold text-gray-700 mb-2">Date de la demande</h2>
-        <p class="text-gray-800">{{ demande.date_demande|date:"d/m/Y H:i" }}</p>
+        <h2 class="text-lg md:text-xl font-semibold text-gray-600 mb-1">Date de la demande</h2>
+        <p class="text-gray-700">{{ demande.date_demande|date:"d/m/Y H:i" }}</p>
       </div>
     </div>
 
-    <!-- Actions -->
-    <div class="flex space-x-4 mt-4">
+    <!-- Actions 
+    <div class="flex flex-col sm:flex-row gap-3 mt-4">
       <a href="{% url 'modifier_demande' demande.pk %}" 
-         class="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg shadow transition">
+         class="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition duration-300 flex items-center justify-center gap-2 text-sm md:text-base">
         ✏️ Modifier
       </a>
-      <form method="POST" action="{% url 'supprimer_demande' demande.pk %}" 
-            onsubmit="return confirm('Voulez-vous vraiment supprimer cette demande ?')">
+      <form method="POST" action="{% url 'supprimer_demande' demande.pk %}" onsubmit="return confirm('Voulez-vous vraiment supprimer cette demande ?')" class="w-full sm:w-auto">
         {% csrf_token %}
         <button type="submit" 
-                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow transition">
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition duration-300 w-full sm:w-auto flex items-center justify-center gap-2 text-sm md:text-base">
           🗑 Supprimer
         </button>
       </form>
     </div>
-
+    -->
   </div>
 
-  <!-- Section dernières demandes (optionnelle) -->
+  <!-- Section dernières demandes -->
   {% if demandes %}
   <div class="mt-10">
-    <h2 class="text-2xl font-bold text-[#004F9F] mb-4">🕓 4 dernières demandes</h2>
+    <h2 class="text-2xl md:text-3xl font-extrabold text-[#004F9F] mb-4 flex items-center gap-2">🕓 4 dernières demandes</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       {% for d in demandes %}
-        <div class="bg-white shadow rounded-lg p-4 hover:shadow-md transition">
-          <p class="font-bold text-[#004F9F]">{{ d.prenom }} {{ d.nom }}</p>
-          <p class="text-sm text-gray-600">📌 {{ d.materiel.categorie }} - {{ d.materiel.description }}</p>
-          <p class="text-sm">Quantité : <span class="font-semibold">{{ d.quantite }}</span></p>
-          <p class="text-sm">Statut : {{ d.get_statut_display }}</p>
-          <a href="{% url 'detail_demande' d.pk %}" 
-             class="inline-block mt-2 text-sm text-[#F58220] hover:underline">
-             ➡ Voir détail
-          </a>
-        </div>
+      <div class="bg-white shadow-lg rounded-2xl p-4 hover:shadow-2xl transition duration-300 border border-gray-100">
+        <p class="font-bold text-[#004F9F] text-md md:text-lg">{{ d.prenom }} {{ d.nom }}</p>
+        <p class="text-sm md:text-md text-gray-500">
+          📌 {{ d.materiel.categorie }} - {{ d.materiel.description }} | 
+          Direction : {{ d.direction.nom }} | 
+          Département : {{ d.departement.nom }} | 
+          Service : {{ d.service.nom }}
+        </p>
+        <p class="text-sm md:text-md">Quantité : <span class="font-semibold">{{ d.quantite }}</span></p>
+        <p class="text-sm md:text-md">Statut : 
+          <span class="px-2 py-0.5 rounded-full font-semibold 
+                {% if d.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
+                {% elif d.statut == 'acceptee' %}bg-green-100 text-green-800
+                {% elif d.statut == 'refusee' %}bg-red-100 text-red-800
+                {% endif %}">
+            {{ d.get_statut_display }}
+          </span>
+        </p>
+        <a href="{% url 'detail_demande' d.pk %}" class="inline-block mt-2 text-sm md:text-md text-[#F58220] hover:underline font-semibold">
+          ➡ Voir détail
+        </a>
+      </div>
       {% endfor %}
     </div>
   </div>

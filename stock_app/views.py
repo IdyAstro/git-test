@@ -208,6 +208,7 @@ def liste_appros(request):
     if not request.session.get('is_authenticated'):
         messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
         return redirect('/connexion/')
+    
     appros = Approvisionnement.objects.all().order_by('-date_appro')
     paginator = Paginator(appros, 10)
     page = request.GET.get("page")
@@ -313,27 +314,29 @@ def creer_demande(request):
 @login_required(login_url='connexion')
 
 
+
 @login_required(login_url='connexion')
 def export_demandes_xls(request):
     if not request.session.get('is_authenticated'):
         messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
         return redirect('/connexion/')
+
     # Récupération des filtres GET
     direction = request.GET.get('direction')
     departement = request.GET.get('departement')
-    statut = request.GET.get('statut')  # correction ici
+    statut = request.GET.get('statut')
     q = request.GET.get('q')
 
     # Filtrer les demandes
-    query = Demande.objects.all()
+    demandes = Demande.objects.all()
     if direction:
-        query = query.filter(direction=direction)
+        demandes = demandes.filter(direction=direction)
     if departement:
-        query = query.filter(departement=departement)
+        demandes = demandes.filter(departement=departement)
     if statut:
-        query = query.filter(statut=statut)
+        demandes = demandes.filter(statut=statut)
     if q:
-        query = query.filter(Q(prenom__icontains=q) | Q(nom__icontains=q))
+        demandes = demandes.filter(Q(prenom__icontains=q) | Q(nom__icontains=q))
 
     # Créer un workbook
     wb = Workbook()
@@ -342,23 +345,23 @@ def export_demandes_xls(request):
 
     # Écrire l’en-tête
     headers = ['Prenom', 'Nom', 'Categorie', 'Description', 'Direction', 'Departement',
-               'Service', 'Centre', 'Email', 'Quantite', 'Motif', 'Statut', 'Date']
+               'Service', 'Email', 'Quantite', 'Motif', 'Statut', 'Date']
     ws.append(headers)
 
-    for d in query:
+    # Ajouter les lignes
+    for d in demandes:
         row = [
             d.prenom,
             d.nom,
-            d.materiel.categorie.label if d.materiel and d.materiel.categorie else "",
-            d.materiel.description if d.materiel else "",
-            d.direction,
-            d.departement,
-            d.service,
-            d.centre,
+            str(d.materiel.categorie) if d.materiel else "",
+            str(d.materiel.description) if d.materiel else "",
+            str(d.direction.nom) if d.direction else "",
+            str(d.departement.nom) if d.departement else "",
+            str(d.service.nom) if d.service else "",
             d.email,
             d.quantite,
             d.motif,
-            d.get_statut_display(),
+            d.get_statut_display(),  # Affiche la version lisible du statut
             d.date_demande.strftime("%d/%m/%Y %H:%M") if d.date_demande else "",
         ]
         ws.append(row)
@@ -423,41 +426,74 @@ def supprimer_demande(request, pk):
         return redirect("liste_demandes")
     return render(request, "demandes/supprimer.html", {"demande": demande})
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.db.models import Q
+from django.core.paginator import Paginator
+
+from .models import Demande, Direction, Departement, Service
 
 @login_required(login_url='connexion')
 def listes_exhaussive(request):
     if not request.session.get('is_authenticated'):
         messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
         return redirect('/connexion/')
-    # Récupérer les 4 dernières demandes par date décroissante
+
     query = request.GET.get("q")
     demandes = Demande.objects.all().order_by("-date_demande")
     if query:
-        demandes = demandes.filter(prenom__icontains=query) | demandes.filter(nom__icontains=query)
-    # Filtres
- 
+        demandes = demandes.filter(Q(prenom__icontains=query) | Q(nom__icontains=query))
+
     # Filtres dynamiques
     current_filters = {}
-    filter_fields = ['direction', 'departement', 'statut']
+    filter_fields = ['direction', 'departement', 'service', 'statut']
     for field in filter_fields:
         value = request.GET.get(field, "")
         if value:
             kwargs = {f"{field}": value}
             demandes = demandes.filter(**kwargs)
         current_filters[field] = value
-    
-    # Pagination
-    paginator = Paginator(demandes, 4)  
+
+    paginator = Paginator(demandes, 4)
     page = request.GET.get("page")
     demandes_page = paginator.get_page(page)
 
-    # Récupérer les champs du modèle
+    # Champs pour filtres
     radio_fields = [Demande._meta.get_field(f) for f in filter_fields]
+
+    # Préparer dictionnaires pour afficher les noms dans le template
+    directions = {str(d.id): d.nom for d in Direction.objects.all()}
+    departements = {str(d.id): d.nom for d in Departement.objects.all()}
+    services = {str(s.id): s.nom for s in Service.objects.all()}
+
+    # Statistiques
+    total_demandes = Demande.objects.count()
+    demandes_attente = Demande.objects.filter(statut='en_attente').count()
+    demandes_acceptee = Demande.objects.filter(statut='acceptee').count()
+    demandes_refusee = Demande.objects.filter(statut='refusee').count()
+    chart_labels = ['En attente', 'Validé', 'Refusée']
+    chart_data = [
+        demandes_attente,
+        demandes_acceptee,
+        total_demandes - demandes_attente - demandes_acceptee
+    ]
+
     return render(request, "demandes/listes_exhaussive.html", {
         "demandes": demandes_page,
         "radio_fields": radio_fields,
         "current_filters": current_filters,
-        "request": request,})
+        "directions": directions,
+        "departements": departements,
+        "services": services,
+        "total_demandes": total_demandes,
+        "demandes_attente": demandes_attente,
+        "demandes_acceptee": demandes_acceptee,
+        "demandes_refusee": demandes_refusee,
+        "chart_labels": chart_labels,
+        "chart_data": chart_data,
+        "request": request,
+    })
 
     
 from django.shortcuts import render, redirect
@@ -466,28 +502,60 @@ from django.contrib import messages
 from .models import Attribution, AttribuMateriel
 from .forms import AttributionForm, AttribuMaterielForm
 
-@login_required(login_url='connexion')
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+from openpyxl import Workbook
+from .models import Attribution
 
+from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Attribution
+from django.db.models import Q
+from django.http import HttpResponse
+import csv
+from openpyxl import Workbook
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from datetime import datetime
+
+@login_required(login_url='connexion')
 def liste_attributions(request):
     if not request.session.get('is_authenticated'):
         messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
         return redirect('/connexion/')
-    qs = Attribution.objects.all()
     
+    qs = Attribution.objects.all()
+
     # Recherche texte
     q = request.GET.get("q", "")
     if q:
-        qs = qs.filter(prenom__icontains=q) | qs.filter(nom__icontains=q) | qs.filter(ref__icontains=q)
+        qs = qs.filter(
+            Q(prenom__icontains=q) |
+            Q(nom__icontains=q) |
+            Q(ref__icontains=q)
+        )
 
-    # Filtres
+    # Filtres dynamiques
     current_filters = {}
-    filter_fields = ['direction', 'departement', 'service', 'etat', 'utilisateur']
+    filter_fields = ['direction', 'departement', 'service', 'etat']
     for field in filter_fields:
         value = request.GET.get(field, "")
         if value:
             kwargs = {f"{field}": value}
             qs = qs.filter(**kwargs)
         current_filters[field] = value
+
+    # Filtre par année
+    annee = request.GET.get('annee')
+    if annee:
+        qs = qs.filter(date_attri__year=annee)
+    current_filters['annee'] = annee
 
     # Pagination
     paginator = Paginator(qs.order_by("-date_attri"), 5)
@@ -503,15 +571,117 @@ def liste_attributions(request):
         "current_filters": current_filters,
         "request": request,
     })
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from django.db.models import Q, Prefetch
+from django.http import HttpResponse
+import openpyxl
+from .models import Attribution, AttribuMateriel
+
+@login_required(login_url='connexion')
+def rapport_attributions(request):
+    qs = Attribution.objects.prefetch_related(
+        Prefetch("attribumateriel_set", queryset=AttribuMateriel.objects.select_related("materiel"))
+    )
+
+    # Recherche texte
+    q = request.GET.get("q", "")
+    if q:
+        qs = qs.filter(
+            Q(prenom__icontains=q) |
+            Q(nom__icontains=q) |
+            Q(ref__icontains=q)
+        )
+
+    # Filtres dynamiques
+    current_filters = {}
+    filter_fields = ['direction', 'departement', 'service', 'etat']
+    for field in filter_fields:
+        value = request.GET.get(field, "")
+        if value:
+            kwargs = {f"{field}": value}
+            qs = qs.filter(**kwargs)
+        current_filters[field] = value
+
+    # Filtre par année
+    annee = request.GET.get('annee')
+    if annee:
+        qs = qs.filter(date_attri__year=annee)
+    current_filters['annee'] = annee
+
+    # Export Excel
+    if request.GET.get("export") == "excel":
+        return export_attributions_excel(qs)
+
+    # Pagination
+    paginator = Paginator(qs.order_by("-date_attri"), 10)
+    page_number = request.GET.get("page")
+    attributions_page = paginator.get_page(page_number)
+
+    # Radio fields pour le template
+    radio_fields = [Attribution._meta.get_field(f) for f in filter_fields]
+
+    return render(request, "attributions/rapport.html", {
+        "attributions": attributions_page,
+        "radio_fields": radio_fields,
+        "current_filters": current_filters,
+        "request": request,
+    })
+
+
+def export_attributions_excel(queryset):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Attributions"
+
+    # Entêtes
+    ws.append([
+        "Date", "Direction", "Département", "Service", "Utilisateur", 
+        "Technicien", "Matériel", "Quantité", "État"
+    ])
+
+    for attri in queryset:
+        for ligne in attri.attribumateriel_set.all():
+            ws.append([
+                attri.date_attri.strftime("%Y-%m-%d"),
+                str(attri.direction),
+                str(attri.departement),
+                str(attri.service),
+                f"{attri.prenom} {attri.nom}",
+                str(attri.utilisateur),
+                str(ligne.materiel),
+                ligne.quantite,
+                attri.get_etat_display()
+            ])
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=rapport_attributions.xlsx'
+    wb.save(response)
+    return response
+
 from django.http import HttpResponse
 from openpyxl import Workbook
+import csv
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 from .models import Attribution
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
 @login_required(login_url='connexion')
 def export_attributions(request):
     if not request.session.get('is_authenticated'):
         messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
         return redirect('/connexion/')
-    # Récupération des filtres GET
+
+    # Récupérer le format demandé : xlsx, csv, pdf
+    export_format = request.GET.get('format', 'xlsx')
+
+    # Récupérer les filtres GET
     direction = request.GET.get('direction')
     departement = request.GET.get('departement')
     service = request.GET.get('service')
@@ -521,54 +691,130 @@ def export_attributions(request):
 
     # Filtrer les attributions
     qs = Attribution.objects.all()
-
     if direction:
-        qs = qs.filter(direction=direction)
+        qs = qs.filter(direction_id=direction)
     if departement:
-        qs = qs.filter(departement=departement)
+        qs = qs.filter(departement_id=departement)
     if service:
-        qs = qs.filter(service=service)
+        qs = qs.filter(service_id=service)
     if etat:
         qs = qs.filter(etat=etat)
     if utilisateur:
         qs = qs.filter(utilisateur_id=utilisateur)
     if q:
-        qs = qs.filter(ref__icontains=q)
+        qs = qs.filter(ref__icontains=q) | qs.filter(prenom__icontains=q) | qs.filter(nom__icontains=q)
 
-    # Créer un workbook
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Attributions"
+    # Liste des colonnes
+    headers = ['Date', 'Prénom', 'Nom', 'Référence', 'Direction', 'Département', 'Service', 'État', 'Utilisateur', 'Email', 'Localité', 'Série']
 
-    # Écrire l’en-tête
-    headers = ['Date', 'Prénom', 'Nom', 'Référence', 'Direction', 'Département', 'Service', 'État', 'Utilisateur' , 'Email' , 'Localité' , 'Série']
-    ws.append(headers)
+    if export_format == 'xlsx':
+        # Création XLSX
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Attributions"
+        ws.append(headers)
 
-    # Écrire les données
-    for attr in qs:
-        row = [
-            attr.date_attri.strftime("%d/%m/%Y %H:%M") if attr.date_attri else '',
-            attr.prenom,
-            attr.nom,
-            attr.ref,
-            attr.direction,
-            attr.departement,
-            attr.service,
-            attr.etat,
-            attr.utilisateur.nom if attr.utilisateur else '',
-            attr.email,
-            attr.locality,
-            attr.serie
-        ]
-        ws.append(row)
+        for attr in qs:
+            ws.append([
+                attr.date_attri.strftime("%d/%m/%Y %H:%M") if attr.date_attri else '',
+                attr.prenom,
+                attr.nom,
+                attr.ref,
+                str(attr.direction),
+                str(attr.departement),
+                str(attr.service),
+                attr.etat,
+                attr.utilisateur.nom if attr.utilisateur else '',
+                attr.email,
+                attr.locality,
+                attr.serie
+            ])
 
-    # Préparer la réponse HTTP
-    response = HttpResponse(
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = 'attachment; filename=attributions.xlsx'
-    wb.save(response)
-    return response
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=attributions.xlsx'
+        wb.save(response)
+        return response
+
+    elif export_format == 'csv':
+        # Création CSV
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=attributions.csv'
+        writer = csv.writer(response)
+        writer.writerow(headers)
+
+        for attr in qs:
+            writer.writerow([
+                attr.date_attri.strftime("%d/%m/%Y %H:%M") if attr.date_attri else '',
+                attr.prenom,
+                attr.nom,
+                attr.ref,
+                attr.direction,
+                attr.departement,
+                attr.service,
+                attr.etat,
+                attr.utilisateur.nom if attr.utilisateur else '',
+                attr.email,
+                attr.locality,
+                attr.serie
+            ])
+        return response
+
+    elif export_format == 'pdf':
+        # Création PDF
+        buffer = BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+        x_margin = 30
+        y = height - 50
+
+        # Titre
+        p.setFont("Helvetica-Bold", 14)
+        p.drawString(x_margin, y, "Liste des deploiements")
+        y -= 30
+
+        # En-têtes
+        p.setFont("Helvetica-Bold", 10)
+        for i, header in enumerate(headers):
+            p.drawString(x_margin + i*100, y, header)
+        y -= 20
+
+        # Données
+        p.setFont("Helvetica", 9)
+        for attr in qs:
+            row = [
+                attr.date_attri.strftime("%d/%m/%Y %H:%M") if attr.date_attri else '',
+                attr.prenom,
+                attr.nom,
+                attr.ref,
+                attr.direction,
+                attr.departement,
+                attr.service,
+                attr.etat,
+                attr.utilisateur.nom if attr.utilisateur else '',
+                attr.email,
+                attr.locality,
+                attr.serie
+            ]
+            for i, item in enumerate(row):
+                p.drawString(x_margin + i*100, y, str(item))
+            y -= 15
+            if y < 50:  # nouvelle page
+                p.showPage()
+                y = height - 50
+
+        p.save()
+        pdf = buffer.getvalue()
+        buffer.close()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=attributions.pdf'
+        return response
+
+    else:
+        messages.error(request, "Format d'export non supporté.")
+        return redirect('liste_attributions')
+
 
 @login_required(login_url='connexion')
 def attribution_detail(request, pk):
@@ -674,8 +920,10 @@ def dashboard(request):
     if not request.session.get('is_authenticated'):
         messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
         return redirect('/connexion/')
-    total_stock = Stock.objects.aggregate(total=Sum("quantite"))["total"] or 0
+    
     total_materiels = Materiel.objects.count()
+    
+    total_stock = Stock.objects.aggregate(total=Sum("quantite"))["total"] or 0
     total_appros = ApproMateriel.objects.aggregate(total=Sum("quantite"))["total"] or 0
     total_attris = AttribuMateriel.objects.aggregate(total=Sum("quantite"))["total"] or 0
 
@@ -698,7 +946,7 @@ def dashboard(request):
     )
 
     stock_critique = Stock.objects.filter(quantite__lt=5)
-    stock_par_materiel = Stock.objects.filter(quantite__gt=5)
+    stock_par_materiel = Stock.objects.filter(quantite__gt=0)
 
     # --- Préparer les listes JSON pour Chart.js ---
     chart_stock_labels = [s["materiel__categorie__label"] for s in stock_par_categorie]
@@ -728,9 +976,12 @@ def dashboard(request):
 
 @login_required(login_url='connexion')
 def nouvel_approvisionnement(request):
+    # Vérification supplémentaire session
     if not request.session.get('is_authenticated'):
         messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
-        return redirect('/connexion/')
+        return redirect('connexion')
+
+    # Traitement POST
     if request.method == "POST":
         utilisateur_id = request.POST.get("utilisateur")
         utilisateur = Utilisateur.objects.get(id=utilisateur_id)
@@ -743,8 +994,6 @@ def nouvel_approvisionnement(request):
             # Vérifie si la case est cochée
             if request.POST.get(f"check_{materiel.id}"):
                 quantite = int(request.POST.get(f"quantite_{materiel.id}", 0) or 0)
-
-                # Vérifie que la quantité > 0
                 if quantite > 0:
                     ApproMateriel.objects.create(
                         appro=appro,
@@ -755,13 +1004,19 @@ def nouvel_approvisionnement(request):
         messages.success(request, "Approvisionnement enregistré avec succès ✅")
         return redirect("liste_appros")
 
+    # GET : récupération utilisateurs et matériels
     utilisateurs = Utilisateur.objects.all()
-    materiels = Materiel.objects.all()
+    materiels_list = Materiel.objects.all()  # ✅ QuerySet pour pagination
+
+    # Pagination sur les matériels (10 par page)
+    paginator = Paginator(materiels_list, 3)
+    page_number = request.GET.get("page")
+    materiels_pages = paginator.get_page(page_number)
+
     return render(request, "appro/nouvel_appro.html", {
         "utilisateurs": utilisateurs,
-        "materiels": materiels
+        "materiels": materiels_pages
     })
-
 
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Attribution, AttribuMateriel
@@ -1043,18 +1298,28 @@ def export_excel(categories, directions, attributions):
     return response
 
 
-from django.shortcuts import render
-from django.db.models import Sum
-from django.http import HttpResponse
-import openpyxl
-from openpyxl.utils import get_column_letter
 from django.db.models import Prefetch
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+import datetime
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Prefetch
+import datetime
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.db.models import Prefetch
+import datetime
+
 @login_required(login_url='connexion')
 def rapport_approvisionnement(request):
-    if not request.session.get('is_authenticated'):
-        messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
-        return redirect('/connexion/')
-    # On récupère tous les approvisionnements et on précharge leurs matériels
+    mois = request.GET.get("mois")
+    annee = request.GET.get("annee")
+
     approvisionnements = (
         Approvisionnement.objects
         .prefetch_related(
@@ -1063,7 +1328,6 @@ def rapport_approvisionnement(request):
         .order_by("-date_appro")
     )
 
-    # Toutes les attributions liées aux matériels approvisionnés
     attributions = (
         Attribution.objects
         .prefetch_related(
@@ -1072,67 +1336,65 @@ def rapport_approvisionnement(request):
         .order_by("-date_attri")
     )
 
-    # Vérifier si export demandé
+    if mois and annee:
+        try:
+            mois = int(mois)
+            annee = int(annee)
+            approvisionnements = approvisionnements.filter(date_appro__month=mois, date_appro__year=annee)
+            attributions = attributions.filter(date_attri__month=mois, date_attri__year=annee)
+        except ValueError:
+            messages.warning(request, "Paramètres de filtre invalides")
+
     if request.GET.get("export") == "excel":
         return export_excel(approvisionnements, attributions)
+
+    mois_noms = [
+        (1, "Janvier"), (2, "Février"), (3, "Mars"), (4, "Avril"),
+        (5, "Mai"), (6, "Juin"), (7, "Juillet"), (8, "Août"),
+        (9, "Septembre"), (10, "Octobre"), (11, "Novembre"), (12, "Décembre")
+    ]
 
     return render(request, "appro/rapport_approvisionnement.html", {
         "approvisionnements": approvisionnements,
         "attributions": attributions,
+        "mois": mois,
+        "annee": annee,
+        "mois_noms": mois_noms,
+        "now": datetime.datetime.now(),
     })
 
-@login_required(login_url='connexion')
+
+
+from django.http import HttpResponse
+import openpyxl
+#=================SORTIE MAGASIN=============================
 def export_excel(approvisionnements, attributions):
-    if not request.session.get('is_authenticated'):
-        messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
-        return redirect('/connexion/')
-    wb = Workbook()
-    ws1 = wb.active
-    ws1.title = "Approvisionnements"
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Approvisionnements"
 
-    # En-têtes
-    ws1.append(["Date Appro", "Utilisateur", "Matériel", "Fabricant", "Description", "Modèle", "Quantité"])
+    # Entêtes
+    ws.append(["Date", "Technicien", "Matériel", "Quantité"])
 
+    # Données
     for appro in approvisionnements:
         for ligne in appro.appromateriel_set.all():
-            ws1.append([
+            # ⚡ Convertir l'objet Materiel en chaîne
+            ws.append([
                 appro.date_appro.strftime("%Y-%m-%d"),
-                appro.utilisateur.nom if appro.utilisateur else "N/A",
-                ligne.materiel.categorie.label,
-                ligne.materiel.fabricant,
-                ligne.materiel.description,
-                ligne.materiel.modal,
-                ligne.quantite,
+                appro.utilisateur.nom,
+                str(ligne.materiel),  # <-- important !
+                ligne.quantite
             ])
 
-    # Feuille 2 : Attributions
-    ws2 = wb.create_sheet("Attributions")
-    ws2.append(["Date Attribution", "Direction", "Département", "Service", "Utilisateur",
-                "Matériel", "Fabricant", "Description", "Modèle", "Quantité", "État"])
-
-    for attri in attributions:
-        for ligne in attri.attribumateriel_set.all():
-            ws2.append([
-                attri.date_attri.strftime("%Y-%m-%d"),
-                attri.direction,
-                attri.departement,
-                attri.service,
-                attri.utilisateur.nom if attri.utilisateur else "N/A",
-                ligne.materiel.categorie.label,
-                ligne.materiel.fabricant,
-                ligne.materiel.description,
-                ligne.materiel.modal,
-                ligne.quantite,
-                attri.etat,
-            ])
-
-    # Export
+    # Préparer la réponse
     response = HttpResponse(
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    response["Content-Disposition"] = 'attachment; filename="rapport_approvisionnement.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename=rapport.xlsx'
     wb.save(response)
     return response
+
 # === EXPORT EXCEL ===
 @login_required(login_url='connexion')
 def export_appro_excel(appros, attributions):
@@ -1189,3 +1451,43 @@ def export_appro_excel(appros, attributions):
     )
     response["Content-Disposition"] = 'attachment; filename="rapport_approvisionnement.xlsx"'
     return response
+from django.http import JsonResponse
+from .models import ApproMateriel
+
+def get_materiels_by_appro(request, appro_id):
+    materiels = ApproMateriel.objects.filter(appro_id=appro_id).select_related("materiel")
+    data = [
+        {"id": m.materiel.id, "text": str(m.materiel)}
+        for m in materiels
+    ]
+    return JsonResponse(data, safe=False)
+
+from django.http import JsonResponse
+from .models import Departement, Service
+
+def load_departements(request):
+    direction_id = request.GET.get('direction_id')
+    departements = Departement.objects.filter(direction_id=direction_id).order_by('nom')
+    data = [{"id": d.id, "nom": d.nom} for d in departements]
+    return JsonResponse(data, safe=False)
+
+def load_services(request):
+    departement_id = request.GET.get('departement_id')
+    services = Service.objects.filter(departement_id=departement_id).order_by('nom')
+    data = [{"id": s.id, "nom": s.nom} for s in services]
+    return JsonResponse(data, safe=False)
+
+
+from django.shortcuts import render
+
+def handler404(request, exception):
+    return render(request, "errors/404.html", status=404)
+
+def handler500(request):
+    return render(request, "errors/500.html", status=500)
+
+def handler403(request, exception):
+    return render(request, "errors/403.html", status=403)
+
+def handler400(request, exception):
+    return render(request, "errors/400.html", status=400)

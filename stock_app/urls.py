@@ -53,7 +53,10 @@ urlpatterns = [
     path("rapport-global/", views.rapport_global, name="rapport_global"),
     path("rapport-direction/", views.rapport_par_direction, name="rapport_par_direction"),
     path("rapport-attribution/", views.rapport_attributions, name="rapport_attributions"),
-    path("rapport/", views.rapport_complet, name="rapport_complet"),
+    path("rapport/", views.rapport_attributions, name="rapport_attributions"),
     path("rapport-appro/", views.rapport_approvisionnement, name="rapport_approvisionnement"),
     path("rapport-appro/", views.rapport_approvisionnement, name="rapport_approvisionnement"),
+    path("ajax/materiels/<int:appro_id>/", views.get_materiels_by_appro, name="get_materiels_by_appro"),
+    path('ajax/load-departements/', views.load_departements, name='ajax_load_departements'),
+    path('ajax/load-services/', views.load_services, name='ajax_load_services'),
 ]

@@ -1,4 +1,4 @@
-{% extends "attributions/base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="space-y-8">
@@ -7,10 +7,10 @@
   <div class="flex justify-between items-center">
     <h1 class="text-2xl font-bold text-[#004F9F]">📑 RAPPORT GLOBAL DES DEPLOIEMENTS</h1>
     <div>
-      <a href="?export=excel" 
+      <!--<a href="?export=excel" 
          class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
         📥 Exporter en Excel
-      </a>
+      </a>-->
     </div>
   </div>
 
@@ -21,9 +21,9 @@
       <thead class="bg-[#F58220] text-white">
         <tr>
           <th class="border p-2">Catégorie</th>
-          <th class="border p-2">Approvisionné</th>
-          <th class="border p-2">Attribué</th>
-          <th class="border p-2">Stock</th>
+          <th class="border p-2">Sortie</th>
+          <th class="border p-2">Deployée</th>
+          <th class="border p-2">Non deployée</th>
         </tr>
       </thead>
       <tbody>
@@ -43,7 +43,7 @@
     </table>
   </div>
 
-  <!-- Section 2 : Répartition par direction -->
+  <!-- Section 2 : Répartition par direction 
   <div class="bg-white shadow rounded-lg p-4">
     <h2 class="text-lg font-semibold text-[#004F9F] mb-3">2️⃣ Deploiement par Direction</h2>
     <table class="table-auto border-collapse border border-gray-300 w-full text-sm">
@@ -63,7 +63,7 @@
       </tbody>
     </table>
   </div>
-
+-->
   <!-- Section 3 : Détails des attributions -->
   <div class="bg-white shadow rounded-lg p-4">
     <h2 class="text-lg font-semibold text-[#004F9F] mb-3">3️⃣ Détails des Deploiement</h2>
@@ -78,7 +78,7 @@
             <th class="border p-2">Direction</th>
             <th class="border p-2">Département</th>
             <th class="border p-2">Service</th>
-            <th class="border p-2">Matériel</th>
+            <th class="border p-2">Equipement</th>
             <th class="border p-2">Quantité</th>
             <th class="border p-2">État</th>
           </tr>

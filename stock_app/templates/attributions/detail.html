@@ -1,47 +1,70 @@
-{% extends "attributions/base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto p-6">
+<div class="max-w-6xl mx-auto p-6 space-y-6">
+
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 flex items-center space-x-2">
+    <a href="{% url 'dashboard' %}" class="hover:underline text-[#004F9F]">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'liste_attributions' %}" class="hover:underline">Déploiements</a>
+    <span>/</span>
+    <span class="font-semibold text-gray-700">Détails #{{ attribution.id }}</span>
+  </nav>
 
   <!-- Header -->
-  <div class="mb-6 flex items-center justify-between">
-    <h1 class="text-3xl font-bold text-[#004F9F]">📌 Détails du deploiement #{{ attribution.id }}</h1>
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <h1 class="text-3xl font-bold text-[#004F9F] flex items-center gap-2">
+      📌 Détails du déploiement #{{ attribution.id }}
+    </h1>
     <a href="{% url 'liste_attributions' %}" 
-       class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl shadow transition">
+       class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl shadow transition flex items-center gap-2">
        ⬅ Retour à la liste
     </a>
   </div>
 
-  <!-- Informations générales -->
-  <div class="grid md:grid-cols-2 gap-6 mb-6">
-    <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition">
-      <p class="text-gray-600"><strong>📅 Date deploiement :</strong> <span class="text-gray-900">{{ attribution.date_attri|date:"d/m/Y H:i" }}</span></p>
-      <p class="text-gray-600"><strong>Référence :</strong> <span class="text-gray-900">{{ attribution.ref }}</span></p>
-      <p class="text-gray-600"><strong>👤 Usager :</strong> <span class="text-gray-900">{{ attribution.prenom }} {{ attribution.nom }}</span></p>
-      <p class="text-gray-600"><strong>Email :</strong> <span class="text-gray-900">{{ attribution.email }}</span></p>
+  <!-- Informations générales (mini-dashboard cards) -->
+  <div class="grid md:grid-cols-2 gap-6">
+    
+    <!-- Carte Usager -->
+    <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition flex flex-col gap-3">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">👤</span>
+        <h3 class="text-lg font-semibold text-gray-700">Usager</h3>
+      </div>
+      <p class="text-gray-600">{{ attribution.prenom }} {{ attribution.nom }}</p>
+      <p class="text-gray-600"><strong>Email:</strong> {{ attribution.email }}</p>
+      <p class="text-gray-600"><strong>Référence:</strong> {{ attribution.ref }}</p>
+      <p class="text-gray-600"><strong>Date:</strong> {{ attribution.date_attri|date:"d/m/Y H:i" }}</p>
     </div>
-    <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition">
-      <p class="text-gray-600"><strong>Direction :</strong> <span class="text-gray-900">{{ attribution.get_direction_display }}</span></p>
-      <p class="text-gray-600"><strong>Département :</strong> <span class="text-gray-900">{{ attribution.get_departement_display }}</span></p>
-      <p class="text-gray-600"><strong>Service :</strong> <span class="text-gray-900">{{ attribution.get_service_display }}</span></p>
-      <p class="text-gray-600"><strong>Localité :</strong> <span class="text-gray-900">{{ attribution.locality }}</span></p>
-      <p class="text-gray-600"><strong>Série :</strong> <span class="text-gray-900">{{ attribution.serie }}</span></p>
-      <p class="text-gray-600"><strong>État :</strong> 
-        <span class="px-2 py-1 rounded-full text-white font-semibold 
-          {% if attribution.etat == 'bon' %} bg-green-500 
-          {% elif attribution.etat == 'pass' %} bg-yellow-500 
-          {% else %} bg-red-500 {% endif %}">
+
+    <!-- Carte Direction / Service -->
+    <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition flex flex-col gap-3">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">🏢</span>
+        <h3 class="text-lg font-semibold text-gray-700">Organisation</h3>
+      </div>
+      <p class="text-gray-600"><strong>Direction :</strong> {{ attribution.get_direction_display }}</p>
+      <p class="text-gray-600"><strong>Département :</strong> {{ attribution.get_departement_display }}</p>
+      <p class="text-gray-600"><strong>Service :</strong> {{ attribution.get_service_display }}</p>
+      <p class="text-gray-600"><strong>Localité :</strong> {{ attribution.locality }}</p>
+      <p class="text-gray-600"><strong>Série :</strong> {{ attribution.serie }}</p>
+      <p class="text-gray-600 flex items-center gap-2"><strong>État :</strong> 
+        <span class="px-3 py-1 rounded-full font-semibold text-white
+          {% if attribution.etat == 'bon' %}bg-green-500{% elif attribution.etat == 'pass' %}bg-yellow-500{% else %}bg-red-500{% endif %}">
           {{ attribution.get_etat_display }}
         </span>
       </p>
-      <p class="text-gray-600"><strong>Utilisateur :</strong> <span class="text-gray-900">{{ attribution.utilisateur }}</span></p>
+      <p class="text-gray-600"><strong>Utilisateur :</strong> {{ attribution.utilisateur }}</p>
     </div>
   </div>
 
   <!-- Matériels attribués -->
-  <div class="bg-white rounded-lg shadow overflow-x-auto">
-    <h2 class="text-xl font-semibold text-[#004F9F] px-4 py-3 border-b border-gray-200">💼 Equipement déploiyé</h2>
-    <table class="min-w-full divide-y divide-gray-200">
+  <div class="bg-white rounded-2xl shadow-md overflow-x-auto">
+    <h2 class="text-xl font-semibold text-[#004F9F] px-6 py-4 border-b border-gray-200 flex items-center gap-2">
+      💼 Équipements déployés
+    </h2>
+    <table class="min-w-full divide-y divide-gray-200 text-gray-700">
       <thead class="bg-[#004F9F] text-white">
         <tr>
           <th class="p-3 text-left">Matériel</th>
@@ -49,14 +72,14 @@
           <th class="p-3 text-left">Fabricant</th>
           <th class="p-3 text-left">Description</th>
           <th class="p-3 text-left">Modèle</th>
-          <th class="p-3 text-center">Quantité deploiyer</th>
-          <th class="p-3 text-center">Stock actuel</th>
+          <th class="p-3 text-center">Quantité</th>
+          <th class="p-3 text-center">Stock</th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
         {% for item in attribution.attribumateriel_set.all %}
           <tr class="hover:bg-gray-50 transition cursor-pointer">
-            <td class="p-3">{{ item.materiel }}</td>
+            <td class="p-3 font-medium">{{ item.materiel }}</td>
             <td class="p-3">{{ item.materiel.categorie }}</td>
             <td class="p-3">{{ item.materiel.fabricant }}</td>
             <td class="p-3">{{ item.materiel.description }}</td>

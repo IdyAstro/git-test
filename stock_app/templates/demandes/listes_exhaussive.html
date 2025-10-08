@@ -1,176 +1,240 @@
-{% extends "demandes/base.html" %}
+{% extends "base.html" %}
 {% load custom_filters %}
 
 {% block content %}
-<div class="p-6 max-w-6xl mx-auto">
+<div class="p-2 md:p-4 max-w-7xl mx-auto">
 
-  
-    <div class="flex justify-between gap-4 mt-6 border border-1 border-[#004F9F] mb-4 px-2 py-2 rounded rounded-xl ">
-      <h1 class="text-2xl font-bold text-[#004F9F] mb-6">📋 Liste complète des demandes</h1>
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-4">
+    <h1 class="text-xl md:text-2xl font-bold text-[#004F9F] flex items-center gap-1">
+      📋 ADMINISTRATION DEMANDES
+    </h1>
     <a href="{% url 'creer_demande' %}" 
-       class="bg-[#F58220] hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow transition">
-       <i class="fa-solid fa-plus"></i>
-  </a>
+       class="bg-[#F58220] hover:bg-orange-500 text-white px-3 md:px-4 py-1 md:py-2 rounded-lg shadow-md flex items-center gap-1 transition w-full md:w-auto text-center text-sm md:text-base">
+       <i class="fa-solid fa-plus"></i> Nouvelle demande
+    </a>
   </div>
+
+  <!-- Cartes statistiques -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+    <div class="bg-white shadow-md rounded-lg p-2 md:p-3 flex flex-col justify-between text-sm md:text-base">
+      <div class="flex items-center justify-between">
+        <span class="text-gray-500 font-semibold">Total demandes</span>
+        <i class="fa-solid fa-list text-xl text-[#004F9F]"></i>
+      </div>
+      <h2 class="mt-2 md:mt-3 text-2xl md:text-3xl font-bold text-gray-800">{{ total_demandes }}</h2>
+    </div>
+    <div class="bg-white shadow-md rounded-lg p-2 md:p-3 flex flex-col justify-between text-sm md:text-base">
+      <div class="flex items-center justify-between">
+        <span class="text-gray-500 font-semibold">En attente</span>
+        <i class="fa-solid fa-hourglass-half text-xl text-yellow-500"></i>
+      </div>
+      <h2 class="mt-2 md:mt-3 text-2xl md:text-3xl font-bold text-gray-800">{{ demandes_attente }}</h2>
+    </div>
+    <div class="bg-white shadow-md rounded-lg p-2 md:p-3 flex flex-col justify-between text-sm md:text-base">
+      <div class="flex items-center justify-between">
+        <span class="text-gray-500 font-semibold">Validées</span>
+        <i class="fa-solid fa-check-circle text-xl text-green-500"></i>
+      </div>
+      <h2 class="mt-2 md:mt-3 text-2xl md:text-3xl font-bold text-gray-800">{{ demandes_acceptee }}</h2>
+    </div>
+        <div class="bg-white shadow-md rounded-lg p-2 md:p-3 flex flex-col justify-between text-sm md:text-base">
+      <div class="flex items-center justify-between">
+        <span class="text-gray-500 font-semibold">Refusées</span>
+        <i class="fa-solid fa-square-xmark text-xl text-red-500"></i>
+      </div>
+      <h2 class="mt-2 md:mt-3 text-2xl md:text-3xl font-bold text-gray-800">{{ demandes_refusee }}</h2>
+    </div>
+  </div>
+
   <!-- Formulaire de recherche -->
-  <form method="get" class="flex items-center bg-white rounded-xl py-2 px-2 space-x-2 mb-6" x-data="{}">
-    <div class="flex gap-2 mb-4">
-    <input type="text" name="q" 
-           placeholder="Filtrer par prénom ou nom" 
-           value="{{ request.GET.q }}"
-           class="border border-gray-300 rounded-lg px-3 py-2 w-64 focus:ring-2 focus:ring-[#004F9F]">
-    <button type="submit" 
-            class="bg-[#004F9F] hover:bg-blue-900 text-white px-4 py-2 rounded-lg shadow transition">
-       <i class="fa-solid fa-magnifying-glass"></i>
+  <form method="get" class="flex flex-col md:flex-row items-start md:items-center gap-2 mb-4 bg-white p-2 md:p-3 rounded-lg shadow-md text-sm" x-data="{}">
+    <div class="flex gap-1 w-full md:w-auto">
+      <input type="text" name="q" placeholder="Filtrer par prénom ou nom" value="{{ request.GET.q }}"
+             class="border border-gray-300 rounded-lg px-2 py-1 w-full md:w-56 focus:ring-1 focus:ring-[#004F9F] focus:outline-none text-sm">
+      <button type="submit" 
+              class="bg-[#004F9F] hover:bg-blue-800 text-white px-3 py-1 rounded-lg shadow w-full md:w-auto text-sm">
+         <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+    </div>
+
+   <div class="flex flex-wrap gap-1 w-full md:w-auto">
+  {% for field in radio_fields %}
+  <div class="relative w-full md:w-auto" x-data="{ open: false }">
+    <button type="button" @click="open = !open"
+            class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg shadow text-xs md:text-sm flex items-center gap-1 w-full md:w-auto transition">
+      
+      {% comment %} Affichage du filtre sélectionné ou le nom du champ {% endcomment %}
+      {% if field.name == "direction" %}
+          {{ directions|get_item:current_filters.direction|default:field.verbose_name }}
+      {% elif field.name == "departement" %}
+          {{ departements|get_item:current_filters.departement|default:field.verbose_name }}
+      {% elif field.name == "service" %}
+          {{ services|get_item:current_filters.service|default:field.verbose_name }}
+      {% else %}
+          {{ current_filters|get_item:field.name|default:field.verbose_name }}
+      {% endif %}
+      
+      <svg class="w-3 h-3 md:w-4 md:h-4 transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+      </svg>
     </button>
-    </div>
-     <!-- Filtres dropdown sous la recherche -->
-    <div class="flex flex-wrap gap-4">
-      {% for field in radio_fields %}
-        <div class="relative" x-data="{ open: false }">
-          <!-- Bouton du filtre -->
-          <button type="button" @click="open = !open"
-                  class="px-3 py-1 bg-gray-200 rounded-lg shadow text-sm flex items-center gap-1">
-            {% with current_filters|get_item:field.name as selected %}
-              {{ selected|default:field.verbose_name }}
-            {% endwith %}
-            <svg class="w-4 h-4 transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
-            </svg>
+
+    <div x-show="open" @click.away="open = false"
+         class="absolute z-10 mt-1 w-full md:w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 text-xs md:text-sm">
+      
+      {% comment %} Liste des choix dynamiques {% endcomment %}
+      {% if field.name == "direction" %}
+          {% for id, nom in directions.items %}
+          <button type="submit" name="direction" value="{{ id }}"
+                  class="w-full text-left px-2 py-1 text-gray-700 hover:bg-gray-100 {% if current_filters.direction == id %} bg-[#004F9F] text-white {% endif %}">
+              {{ nom }}
           </button>
+          {% endfor %}
+      {% elif field.name == "departement" %}
+          {% for id, nom in departements.items %}
+          <button type="submit" name="departement" value="{{ id }}"
+                  class="w-full text-left px-2 py-1 text-gray-700 hover:bg-gray-100 {% if current_filters.departement == id %} bg-[#004F9F] text-white {% endif %}">
+              {{ nom }}
+          </button>
+          {% endfor %}
+      {% elif field.name == "service" %}
+          {% for id, nom in services.items %}
+          <button type="submit" name="service" value="{{ id }}"
+                  class="w-full text-left px-2 py-1 text-gray-700 hover:bg-gray-100 {% if current_filters.service == id %} bg-[#004F9F] text-white {% endif %}">
+              {{ nom }}
+          </button>
+          {% endfor %}
+      {% else %}
+          {% for choice in field.choices %}
+          <button type="submit" name="{{ field.name }}" value="{{ choice.0 }}"
+                  class="w-full text-left px-2 py-1 text-gray-700 hover:bg-gray-100 {% if current_filters|get_item:field.name == choice.0 %} bg-[#004F9F] text-white {% endif %}">
+              {{ choice.1 }}
+          </button>
+          {% endfor %}
+      {% endif %}
 
-          <!-- Dropdown -->
-          <div x-show="open" @click.away="open = false"
-               class="absolute z-10 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2">
-            {% for choice in field.choices %}
-              <button type="submit" name="{{ field.name }}" value="{{ choice.0 }}"
-                      class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100
-                             {% if current_filters|get_item:field.name == choice.0 %} bg-[#004F9F] text-white {% endif %}">
-                {{ choice.1 }}
-              </button>
-            {% endfor %}
+      {% comment %} Bouton "Tous" pour réinitialiser le filtre {% endcomment %}
+      <button type="submit" name="{{ field.name }}" value=""
+              class="w-full text-left px-2 py-1 text-gray-700 hover:bg-gray-100 {% if not current_filters|get_item:field.name %} bg-[#004F9F] text-white {% endif %}">
+          Tous
+      </button>
 
-            <!-- Option Tous -->
-            <button type="submit" name="{{ field.name }}" value=""
-                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100
-                           {% if not current_filters|get_item:field.name %} bg-[#004F9F] text-white {% endif %}">
-              Tous
-            </button>
-          </div>
-        </div>
-      {% endfor %}
     </div>
+  </div>
+  {% endfor %}
+</div>
+  
   </form>
 
-  
-  
-  <!-- Tableau des demandes -->
-  <div class="overflow-x-auto mb-4">
-    <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow">
-      <thead class="bg-[#004F9F] text-white">
+  <!-- Tableau compact -->
+  <div class="overflow-x-auto mb-4 shadow-md rounded-lg">
+    <table class="min-w-full bg-white rounded-lg text-xs md:text-sm">
+      <thead class="bg-[#004F9F] text-white uppercase tracking-wider text-xs md:text-sm">
         <tr>
-          <th class="px-4 py-2 text-left">Prénom</th>
-          <th class="px-4 py-2 text-left">Nom</th>
-          <th class="px-4 py-2 text-left">Matériel</th>
-          <th class="px-4 py-2 text-left">Quantité</th>
-          <th class="px-4 py-2 text-left">Direction</th>
-          <th class="px-4 py-2 text-left">Département</th>
-          <th class="px-4 py-2 text-left">Statut</th>
-          <th class="px-4 py-2 text-left">Date</th>
-          <th class="px-4 py-2 text-center">Actions</th>
+          <th class="px-1 md:px-2 py-1 text-left">Prénom</th>
+          <th class="px-1 md:px-2 py-1 text-left">Nom</th>
+          <th class="px-1 md:px-2 py-1 text-left">Téléphone</th>
+          <th class="px-1 md:px-2 py-1 text-left">Equipement</th>
+          <th class="px-1 md:px-2 py-1 text-left">Quantité</th>
+          <th class="px-1 md:px-2 py-1 text-left">Direction</th>
+         
+          <th class="px-1 md:px-2 py-1 text-left">Statut</th>
+          <th class="px-1 md:px-2 py-1 text-left">Date</th>
+          <th class="px-1 md:px-2 py-1 text-center">Actions</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
         {% for d in demandes %}
-          <tr class="hover:bg-gray-50">
-            <td class="px-4 py-2">{{ d.prenom }}</td>
-            <td class="px-4 py-2">{{ d.nom }}</td>
-            <td class="px-4 py-2">{{ d.materiel.categorie}}</td>
-            <td class="px-4 py-2 text-center">{{ d.quantite }}</td>
-            <td class="px-4 py-2">{{ d.direction }}</td>
-            <td class="px-4 py-2">{{ d.departement }}</td>
-            <td class="px-4 py-2">{{ d.get_statut_display }}</td>
-            <td class="px-4 py-2">{{ d.date_demande|date:"d/m/Y H:i" }}</td>
-           <td class="px-4 py-2 text-center" x-data="{ openMenu: false, showModal: false }">
-  <!-- Bouton Actions -->
-             <button @click="openMenu = !openMenu" 
-                      class="bg-[#F58220] hover:bg-orange-600 text-white px-3 py-1 rounded-lg relative">
-                     Actions <i class="fa-solid fa-caret-down ml-2"></i>
-             </button>
-
-  <!-- Menu déroulant -->
-         <div x-show="openMenu" @click.outside="openMenu = false"
-                 class="absolute mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-            <a href="{% url 'detail_demande' d.pk %}" 
-               class="block px-4 py-2 text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-angle-right"></i></a>
-            <a href="{% url 'modifier_demande' d.pk %}" 
-               class="block px-4 py-2 text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-pen"></i></a>
-            <button @click="showModal = true; openMenu = false" 
-                     class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </div>
-
-  <!-- Modal de confirmation -->
-  <div x-show="showModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-      <h2 class="text-xl font-bold text-gray-800 mb-4">Confirmer la suppression</h2>
-      <p class="mb-6">Voulez-vous vraiment supprimer cette demande ? Cette action est irréversible.</p>
-      <div class="flex justify-end space-x-4">
-        <button @click="showModal = false" 
-                class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Annuler</button>
-        <form method="POST" action="{% url 'supprimer_demande' d.pk %}">
-          {% csrf_token %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-1 md:px-2 py-1">{{ d.prenom }}</td>
+          <td class="px-1 md:px-2 py-1">{{ d.nom }}</td>
+          <td class="px-1 md:px-2 py-1">{{ d.tel }}</td>
+          <td class="px-1 md:px-2 py-1">{{ d.materiel.categorie }}</td>
+          <td class="px-1 md:px-2 py-1 text-center">{{ d.quantite }}</td>
+          <td class="px-1 md:px-2 py-1">{{ d.direction.nom }}</td>
           
-          <button type="submit" 
-                  class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white">
-             Supprimer
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-</td>
-</tr>
+          <td class="px-1 md:px-2 py-1">
+            {% if d.statut == 'en_attente' %}
+              <span class="bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded-full text-xs font-semibold">En attente</span>
+            {% elif d.statut == 'traitee' %}
+              <span class="bg-green-100 text-green-800 px-1 py-0.5 rounded-full text-xs font-semibold">Traitée</span>
+            {% else %}
+              <span class="bg-gray-100 text-gray-800 px-1 py-0.5 rounded-full text-xs font-semibold">{{ d.get_statut_display }}</span>
+            {% endif %}
+          </td>
+          <td class="px-1 md:px-2 py-1">{{ d.date_demande|date:"d/m/Y H:i" }}</td>
+          <td class="px-1 md:px-2 py-1 text-center relative" x-data="{ openMenu: false, showModal: false }">
+            <button @click="openMenu = !openMenu" 
+                    class="bg-[#F58220] hover:bg-orange-500 text-white px-2 py-1 rounded-md shadow-sm text-xs md:text-sm w-full md:w-auto">Actions <i class="fa-solid fa-caret-down ml-1"></i></button>
+            <div x-show="openMenu" @click.outside="openMenu = false"
+                 class="absolute right-0 mt-1 w-full md:w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-10 text-xs md:text-sm">
+              <a href="{% url 'detail_demande' d.pk %}" class="block px-2 py-1 hover:bg-gray-100"><i class="fa-solid fa-angle-right mr-1"></i>Détails</a>
+              <a href="{% url 'modifier_demande' d.pk %}" class="block px-2 py-1 hover:bg-gray-100"><i class="fa-solid fa-pen mr-1"></i>Modifier</a>
+              <button @click="showModal = true; openMenu = false" class="w-full text-left px-2 py-1 text-red-600 hover:bg-gray-100"><i class="fa-solid fa-trash mr-1"></i>Supprimer</button>
+            </div>
+
+            <!-- Modal -->
+            <div x-show="showModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20 p-2">
+              <div class="bg-white rounded-lg shadow-lg p-3 w-full max-w-xs">
+                <h2 class="text-base md:text-lg font-bold mb-2">Confirmer la suppression</h2>
+                <p class="mb-3 md:mb-4 text-gray-600 text-xs md:text-sm">Voulez-vous vraiment supprimer cette demande ?</p>
+                <div class="flex flex-col sm:flex-row justify-end gap-1">
+                  <button @click="showModal = false" class="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 w-full sm:w-auto text-xs md:text-sm">Annuler</button>
+                  <form method="POST" action="{% url 'supprimer_demande' d.pk %}" class="w-full sm:w-auto">
+                    {% csrf_token %}
+                    <button type="submit" class="px-3 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto text-xs md:text-sm">Supprimer</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+          </td>
+        </tr>
         {% empty %}
-          <tr>
-            <td colspan="9" class="text-center py-4 text-gray-500 italic">
-              Aucune demande enregistrée.
-            </td>
-          </tr>
-      {% endfor %}
+        <tr>
+          <td colspan="9" class="text-center py-3 text-gray-500 italic text-xs md:text-sm">Aucune demande enregistrée.</td>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
-  <div class="flex justify-start space-x-4">
-  <a href="{% url 'export_demandes_xls' %}" 
-       class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition">
-       ⬇ Exporter en xlsx
-  </a>
 
-</div>
+  <!-- Export & Pagination -->
+  <div class="flex flex-col md:flex-row justify-between items-center gap-2 mb-4">
+{% comment %}
+Lien d’export XLSX avec transmission de tous les filtres GET
+{% endcomment %}
 
-   <!-- Pagination -->
-  <div class="flex justify-center items-center space-x-4 mt-6">
-    {% if demandes.has_previous %}
-      <a href="?page={{ demandes.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
-         class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
-         ⬅ Précédent
-      </a>
-    {% endif %}
+{% with q=request.GET.q|default:'' %}
+{% with direction=request.GET.direction|default:'' %}
+{% with departement=request.GET.departement|default:'' %}
+{% with service=request.GET.service|default:'' %}
+{% with centre=request.GET.centre|default:'' %}
+{% with statut=request.GET.statut|default:'' %}
+<a href="{% url 'export_demandes_xls' %}?q={{ q }}&direction={{ direction }}&departement={{ departement }}&service={{ service }}&centre={{ centre }}&statut={{ statut }}"
+   class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg shadow-md w-full md:w-auto text-center text-xs md:text-sm">
+   ⬇ Exporter en XLSX
+</a>
+{% endwith %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
 
-    <span class="text-gray-700 font-semibold">
-      Page {{ demandes.number }} sur {{ demandes.paginator.num_pages }}
-    </span>
-
-    {% if demandes.has_next %}
-      <a href="?page={{ demandes.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
-         class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
-         Suivant ➡
-      </a>
-    {% endif %}
+    <div class="flex flex-wrap justify-center items-center gap-1 text-xs md:text-sm">
+      {% if demandes.has_previous %}
+        <a href="?page={{ demandes.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">⬅ Précédent</a>
+      {% endif %}
+      <span class="text-gray-700 font-semibold px-1 py-0.5 bg-gray-100 rounded-md">Page {{ demandes.number }} sur {{ demandes.paginator.num_pages }}</span>
+      {% if demandes.has_next %}
+        <a href="?page={{ demandes.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">Suivant ➡</a>
+      {% endif %}
+    </div>
   </div>
 
 </div>
+
 
 {% endblock %}

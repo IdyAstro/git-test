@@ -14,184 +14,234 @@
 
 <div class="flex min-h-screen">
   <!-- Sidebar -->
-  <aside class="fixed top-0 left-0 h-screen w-64 bg-[#004F9F] text-white flex flex-col">
-    <!-- Logo -->
-    <div class="p-6 flex flex-col items-center border-b border-[#F58220]">
-      <span class="text-xl font-bold">Gestion Matériel</span>
-    </div>
+<!-- Sidebar -->
+<aside class="fixed top-0 left-0 h-screen w-64 bg-[#004F9F] text-white flex flex-col">
+  <!-- Logo -->
+  <div class="p-6 flex flex-col items-center border-b border-[#F58220]">
+    <span class="text-xl font-bold">SOTELPARC</span>
+  </div>
 
-    <!-- Menu -->
-    <nav class="flex-1 p-4 overflow-y-auto">
-      <ul class="space-y-4">
+  <!-- Menu -->
+  <nav class="flex-1 p-4 overflow-y-auto">
+    <ul class="space-y-4">
 
-        <!-- Tableau de bord -->
-        <li>
-          <a href="{% url 'dashboard' %}" 
-             class="block p-2 rounded transition-colors duration-300 
-             {% if request.resolver_match.url_name == 'dashboard' %}bg-[#F58220] text-white{% else %}hover:bg-[#F58220]{% endif %}">
-            <i class="fa-solid fa-chart-line"></i> DASHBOARD
-          </a>
-        </li>
+      <!-- Tableau de bord -->
+      <li>
+        <a href="{% url 'dashboard' %}" 
+           class="block p-2 rounded transition-colors duration-300
+           {% if request.resolver_match.url_name == 'dashboard' %}bg-[#F58220] text-white{% else %}hover:bg-[#F58220]{% endif %}">
+          <i class="fa-solid fa-chart-line"></i> DASHBOARD
+        </a>
+      </li>
 
-        <!-- Catégories -->
-        <li x-data="{ open: ['liste_categories'].includes('{{ request.resolver_match.url_name }}') }">
-          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
-            <span><i class="fa-solid fa-layer-group"></i> CATEGORIES</span>
-            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
-          </button>
-          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
-            <li>
-              <a href="{% url 'liste_categories' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'liste_categories' %}bg-[#F58220] text-white{% endif %}">
-                 Liste
-              </a>
-            </li>
-            <li>
-              <a href="#" class="block px-2 py-1 rounded hover:bg-[#F58220]">Ajouter</a>
-            </li>
-          </ul>
-        </li>
+      <!-- Catégories -->
+      <li x-data="{ open: ['liste_categories','ajouter_categorie'].includes('{{ request.resolver_match.url_name }}') }">
+        <button @click="open=!open" 
+                :class="open ? 'bg-[#F58220]' : ''"
+                class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220] transition">
+          <span><i class="fa-solid fa-layer-group"></i> CATEGORIES</span>
+          <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+        </button>
+        <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+          <li>
+            <a href="{% url 'liste_categories' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'liste_categories' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> LISTE DES CATEGORIES
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'ajouter_categorie' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'ajouter_categorie' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> CREER UNE CATEGORIE
+            </a>
+          </li>
+        </ul>
+      </li>
 
-        <!-- Matériels -->
-        <li x-data="{ open: ['materiel_list'].includes('{{ request.resolver_match.url_name }}') }">
-          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
-            <span><i class="fa-solid fa-house-laptop"></i> MATERIEL</span>
-            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
-          </button>
-          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
-            <li>
-              <a href="{% url 'materiel_list' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'materiel_list' %}bg-[#F58220] text-white{% endif %}">
-                 Liste
-              </a>
-            </li>
-            <li>
-              <a href="#" class="block px-2 py-1 rounded hover:bg-[#F58220]">Ajouter</a>
-            </li>
-          </ul>
-        </li>
+      <!-- Matériels -->
+      <li x-data="{ open: ['materiel_list','materiel_create'].includes('{{ request.resolver_match.url_name }}') }">
+        <button @click="open=!open"
+                :class="open ? 'bg-[#F58220]' : ''"
+                class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220] transition">
+          <span><i class="fa-solid fa-house-laptop"></i> EQUIPEMENTS</span>
+          <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+        </button>
+        <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+          <li>
+            <a href="{% url 'materiel_list' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'materiel_list' %}bg-[#F58220] text-white{% endif %}">
+              <i class="fa-solid text-white fa-arrow-right"></i> LISTES DES EQUIPEMENTS
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'materiel_create' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'materiel_create' %}bg-[#F58220] text-white{% endif %}">
+              <i class="fa-solid text-white fa-arrow-right"></i> ENREGISTRER
+            </a>
+          </li>
+        </ul>
+      </li>
 
-        <!-- Réception -->
-        <li x-data="{ open: ['liste_appros','nouvel_approvisionnement','rapport_approvisionnement'].includes('{{ request.resolver_match.url_name }}') }">
-          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
-            <span><i class="fa-solid fa-cart-shopping"></i> RECUPERATION</span>
-            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
-          </button>
-          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
-            <li>
-              <a href="{% url 'liste_appros' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'liste_appros' %}bg-[#F58220] text-white{% endif %}">
-                 HISTORIQUE
-              </a>
-            </li>
-            <li>
-              <a href="{% url 'nouvel_approvisionnement' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'nouvel_approvisionnement' %}bg-[#F58220] text-white{% endif %}">
-                 ENREGISTREMENT
-              </a>
-            </li>
-            <li>
-              <a href="{% url 'rapport_approvisionnement' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'rapport_approvisionnement' %}bg-[#F58220] text-white{% endif %}">
-                 RAPPORT
-              </a>
-            </li>
-          </ul>
-        </li>
+      <!-- Réception -->
+      <li x-data="{ open: ['liste_appros','nouvel_approvisionnement','rapport_approvisionnement'].includes('{{ request.resolver_match.url_name }}') }">
+        <button @click="open=!open"
+                :class="open ? 'bg-[#F58220]' : ''"
+                class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220] transition">
+          <span><i class="fa-solid fa-cart-shopping"></i> MAGASIN</span>
+          <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+        </button>
+        <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+          <li>
+            <a href="{% url 'liste_appros' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'liste_appros' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> HISTORIQUE DES SORTIES
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'nouvel_approvisionnement' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'nouvel_approvisionnement' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> ENREGISTRER UNE SORTIE
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'rapport_approvisionnement' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'rapport_approvisionnement' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> RAPPORT
+            </a>
+          </li>
+        </ul>
+      </li>
+<!-- Déploiement -->
+      <li x-data="{ open: ['liste_attributions','nouvelle_attribution','rapport_complet'].includes('{{ request.resolver_match.url_name }}') }">
+        <button @click="open=!open"
+                :class="open ? 'bg-[#F58220]' : ''"
+                class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220] transition">
+          <span><i class="fa-solid fa-screwdriver-wrench"></i> DEPLOIEMENT</span>
+          <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+        </button>
+        <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+          <li>
+            <a href="{% url 'liste_attributions' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'liste_attributions' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> CONFIGURATION
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'nouvelle_attribution' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'nouvelle_attribution' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> SAUVEGARDER
+            </a>
+          </li>
+          <!-- Déploiement 
+          <li>
+            <a href="{% url 'rapport_attributions' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'rapport_attributions' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> ETATS
+            </a>
+          </li>
+          -->
+        </ul>
+      </li>
 
-        <!-- Demandes -->
-        <li x-data="{ open: ['listes_exhaussive','creer_demande'].includes('{{ request.resolver_match.url_name }}') }">
-          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
-            <span><i class="fa-solid fa-file-lines"></i> DEMANDES</span>
-            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
-          </button>
-          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
-            <li>
-              <a href="{% url 'listes_exhaussive' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'listes_exhaussive' %}bg-[#F58220] text-white{% endif %}">
-                 GESTION
-              </a>
-            </li>
-            <li>
-              <a href="{% url 'creer_demande' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'creer_demande' %}bg-[#F58220] text-white{% endif %}">
-                 CREATION
-              </a>
-            </li>
-            <li>
-              <a href="#" class="block px-2 py-1 rounded hover:bg-[#F58220]">RAPPORT</a>
-            </li>
-          </ul>
-        </li>
 
-        <!-- Déploiement -->
-        <li x-data="{ open: ['liste_attributions','nouvelle_attribution','rapport_complet'].includes('{{ request.resolver_match.url_name }}') }">
-          <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
-            <span><i class="fa-solid fa-screwdriver-wrench"></i> DEPLOIEMENT</span>
-            <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
-          </button>
-          <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
-            <li>
-              <a href="{% url 'liste_attributions' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'liste_attributions' %}bg-[#F58220] text-white{% endif %}">
-                 CONFIGURATION
-              </a>
-            </li>
-            <li>
-              <a href="{% url 'nouvelle_attribution' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'nouvelle_attribution' %}bg-[#F58220] text-white{% endif %}">
-                 SAUVEGARDE
-              </a>
-            </li>
-            <li>
-              <a href="{% url 'rapport_complet' %}" 
-                 class="block px-2 py-1 rounded hover:bg-[#F58220] 
-                 {% if request.resolver_match.url_name == 'rapport_complet' %}bg-[#F58220] text-white{% endif %}">
-                 RAPPORT
-              </a>
-            </li>
-          </ul>
-        </li>
+      <!-- Demandes -->
+      <li x-data="{ open: ['listes_exhaussive','creer_demande'].includes('{{ request.resolver_match.url_name }}') }">
+        <button @click="open=!open"
+                :class="open ? 'bg-[#F58220]' : ''"
+                class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220] transition">
+          <span><i class="fa-solid fa-file-lines"></i> DEMANDES</span>
+          <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+        </button>
+        <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
+          <li>
+            <a href="{% url 'listes_exhaussive' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'listes_exhaussive' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> ADMINISTRATION
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'creer_demande' %}" 
+               class="block text-center px-2 py-1 rounded-xl text-orange-500 text-[14px] hover:bg-[#F58220] hover:text-white
+               {% if request.resolver_match.url_name == 'creer_demande' %}bg-[#F58220] text-white{% endif %}">
+               <i class="fa-solid text-white fa-arrow-right"></i> NOUVELLE DEMANDE
+            </a>
+          </li>
+        </ul>
+      </li>
 
-        <!-- Déconnexion -->
-        <li class="text-center">
-          <a href="{% url 'deconnexion'%}" class="block p-2 rounded bg-red-500 mt-20 hover:bg-red-600 transition">
-            <i class="fa-solid fa-right-from-bracket"></i> DECONNEXION
-          </a>
-        </li>
+            <!-- Déconnexion -->
+      <li class="text-center">
+        <a href="{% url 'deconnexion' %}" class="block p-2 rounded bg-red-500 mt-20 hover:bg-red-600 transition">
+          <i class="fa-solid fa-right-from-bracket"></i> DECONNEXION
+        </a>
+      </li>
 
-      </ul>
-    </nav>
-  </aside>
+    </ul>
+  </nav>
+</aside>
+
 
   <!-- Main content -->
-  <main class="flex-1 flex flex-col ml-64">
-    <!-- Header -->
-    <header class="bg-white shadow p-4 flex justify-between items-center">
-      <h1 class="text-xl font-bold text-[#004F9F]">📊 DASHBOARD</h1>
-      <div class="flex items-center space-x-3">
-        <span class="font-semibold text-[#004F9F]">👤 {{request.user}}</span>
-        <a href="{% url 'deconnexion'%}" class="bg-[#F58220] text-white px-3 py-1 rounded hover:bg-orange-600 transition">
-          Logout
-        </a>
-      </div>
-    </header>
 
-    <!-- Page Content -->
-    <section class="flex-1 p-6 bg-gray-50">
-      {% block content %}
-      {% endblock %}
-    </section>
-  </main>
+
+    <!-- Main content -->
+<main class="flex-1 flex flex-col ml-64">
+  <!-- Header -->
+  <header class="bg-white shadow p-4 flex justify-between items-center">
+    <!-- Breadcrumb -->
+  <nav class="bg-gray-100 px-6 py-2 text-sm rounded-b shadow mb-4">
+    <ol class="list-reset flex text-gray-600">
+      <li>
+        <a href="{% url 'dashboard' %}" class="text-[#004F9F] hover:underline">ACCEUIL</a>
+      </li>
+      {% if request.resolver_match.url_name %}
+      <li><span class="mx-2">/</span></li>
+      <li class="capitalize">
+        {% if request.resolver_match.url_name == 'liste_categories' %}Liste des catégories{% endif %}
+        {% if request.resolver_match.url_name == 'ajouter_categorie' %}Ajouter une catégorie{% endif %}
+        {% if request.resolver_match.url_name == 'materiel_list' %}Liste des équipements{% endif %}
+        {% if request.resolver_match.url_name == 'materiel_create' %}Enregistrer un équipement{% endif %}
+        {% if request.resolver_match.url_name == 'liste_appros' %}Historique des sorties{% endif %}
+        {% if request.resolver_match.url_name == 'nouvel_approvisionnement' %}Nouvelle sortie{% endif %}
+        {% if request.resolver_match.url_name == 'rapport_approvisionnement' %}Rapport{% endif %}
+        {% if request.resolver_match.url_name == 'listes_exhaussive' %}Administration{% endif %}
+        {% if request.resolver_match.url_name == 'creer_demande' %}Nouvelle demande{% endif %}
+        {% if request.resolver_match.url_name == 'liste_attributions' %}Configuration{% endif %}
+        {% if request.resolver_match.url_name == 'nouvelle_attribution' %}Sauvegarder{% endif %}
+        {% if request.resolver_match.url_name == 'rapport_complet' %}États{% endif %}
+      </li>
+      {% endif %}
+    </ol>
+  </nav>
+
+    <div class="flex items-center space-x-3">
+      <span class="font-semibold text-[#004F9F]">👤 {{request.user}}</span>
+      <a href="{% url 'deconnexion'%}" class="bg-[#F58220] text-white px-3 py-1 rounded hover:bg-orange-600 transition">
+        Logout
+      </a>
+    </div>
+  </header>
+
+  
+  <!-- Page Content -->
+  <section class="flex-1 p-6 bg-gray-50">
+    {% block content %}
+    {% endblock %}
+  </section>
+</main>
+
+  
 </div>
 
 </body>

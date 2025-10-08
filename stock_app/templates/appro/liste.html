@@ -1,4 +1,4 @@
-{% extends "appro/base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="p-6 max-w-7xl mx-auto space-y-6">
@@ -6,11 +6,11 @@
   <!-- En-tête -->
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
     <h1 class="text-3xl font-bold text-[#005BAC] flex items-center gap-2">
-      🛒 HISTORIQUE DES RECEPTIONS
+      🛒 HISTORIQUE DES SORTIES
     </h1>
     <a href="{% url 'nouvel_approvisionnement' %}" 
        class="bg-gradient-to-r from-[#005BAC] to-[#004080] text-white px-5 py-2 rounded-xl shadow hover:scale-105 transition flex items-center gap-2">
-       ➕ NOUVELLE RECEPTION
+       ➕ NOUVELLE SORTIE
     </a>
   </div>
 
@@ -26,7 +26,7 @@
         Rechercher
       </button>
       {% if request.GET.q %}
-        <a href="{% url 'liste_appro' %}" class="text-sm text-[#005BAC] underline">❌ Réinitialiser</a>
+        <a href="{% url 'liste_appros' %}" class="text-sm text-[#005BAC] underline">❌ Réinitialiser</a>
       {% endif %}
     </form>
   </div>
@@ -79,7 +79,7 @@
         <tr>
           <th class="px-4 py-3">📅 Date</th>
           <th class="px-4 py-3">👤 Utilisateur</th>
-          <th class="px-4 py-3">📦 Matériels</th>
+          <th class="px-4 py-3">📦 Equipements</th>
       
         </tr>
       </thead>

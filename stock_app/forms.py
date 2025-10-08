@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import *
 from .import views
+from phonenumber_field.modelfields import PhoneNumberField 
 
 class CustomUserCreationForm(UserCreationForm):
     password1 = forms.CharField(
@@ -43,9 +44,24 @@ class MaterielForm(forms.ModelForm):
     class Meta:
         model = Materiel
         fields = ['categorie', 'fabricant', 'description','modal']
-        
-
-
+        widgets = {
+            "categorie": forms.Select(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+               
+            }),
+            "fabricant": forms.TextInput(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+                "placeholder": "FABRICANT"
+            }),
+              "description": forms.TextInput(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+                "placeholder": "DESCRIPTION"
+            }),
+              "modal": forms.TextInput(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+                "placeholder": "MODELE"
+            }),
+        }
 
 # forms.py
 from django import forms
@@ -76,13 +92,37 @@ from .models import Demande
 
 from django import forms
 from .models import Demande
+from .models import Demande, Direction, Departement, Service, Materiel
 
 class DemandeForm(forms.ModelForm):
+    
+    direction = forms.ModelChoiceField(
+        queryset=Direction.objects.all(),
+        widget=forms.RadioSelect(attrs={"class": "space-y-2 text-gray-700"}),
+        empty_label=None
+    )
+    departement = forms.ModelChoiceField(
+        queryset=Departement.objects.all(),
+        widget=forms.RadioSelect(attrs={"class": "space-y-2 text-gray-700"}),
+        empty_label=None
+    )
+    service = forms.ModelChoiceField(
+        queryset=Service.objects.all(),
+        widget=forms.RadioSelect(attrs={"class": "space-y-2 text-gray-700"}),
+        empty_label=None
+    )
+    materiel = forms.ModelChoiceField(
+        queryset=Materiel.objects.all(),
+        widget=forms.Select(attrs={
+            "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200"
+        })
+    )
+
     class Meta:
         model = Demande
         fields = [
-            "prenom", "nom", "email", "direction", "departement",
-            "service", "centre", "motif", "materiel", "quantite", "statut"
+            "prenom", "nom", "email", "tel","direction", "departement",
+            "service", "motif", "materiel", "quantite", "statut"
         ]
         widgets = {
             "prenom": forms.TextInput(attrs={
@@ -97,25 +137,15 @@ class DemandeForm(forms.ModelForm):
                 "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
                 "placeholder": "Adresse email"
             }),
-            "direction": forms.RadioSelect(attrs={
-                "class": "space-y-2 text-gray-700"
+            "tel": forms.TextInput(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
+                "placeholder": "Téléphone"
             }),
-            "departement": forms.RadioSelect(attrs={
-                "class": "space-y-2 text-gray-700"
-            }),
-            "service": forms.RadioSelect(attrs={
-                "class": "space-y-2 text-gray-700"
-            }),
-            "centre": forms.RadioSelect(attrs={
-                "class": "space-y-2 text-gray-700"
-            }),
+      
             "motif": forms.Textarea(attrs={
                 "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
                 "rows": 3,
                 "placeholder": "Expliquez le motif de votre demande"
-            }),
-            "materiel": forms.Select(attrs={
-                "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200"
             }),
             "quantite": forms.NumberInput(attrs={
                 "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200",
@@ -125,7 +155,6 @@ class DemandeForm(forms.ModelForm):
                 "class": "w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-200"
             }),
         }
-
 
 from django import forms
 from .models import Attribution, AttribuMateriel, Materiel
@@ -147,10 +176,10 @@ class AttributionForm(forms.ModelForm):
             'locality','etat','utilisateur','demande','approvisionnement'
         ]
         widgets = {
-            'direction': forms.RadioSelect(),
-            'departement': forms.RadioSelect(),
-            'service': forms.RadioSelect(),
-            'etat': forms.RadioSelect(),
+            'direction': forms.Select(),
+            'departement': forms.Select(),
+            'service': forms.Select(),
+            'etat': forms.Select(),
             'utilisateur': forms.Select(),
             'demande': forms.Select(attrs={"class":"block w-full border rounded p-2"}),
             'approvisionnement': forms.Select(attrs={"class":"block w-full border rounded p-2"}),

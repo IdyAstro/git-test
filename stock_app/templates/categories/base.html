@@ -27,43 +27,43 @@
         <!-- Tableau de bord -->
         <li>
           <a href="{% url 'dashboard' %}" class="block p-2 rounded transition-colors duration-300">
-            <i class="fa-solid fa-chart-line"></i> Tableau de bord
+            <i class="fa-solid fa-chart-line"></i> DASHBOARD
           </a>
         </li>
 
         <!-- Catégories -->
         <li x-data="{open:false}">
           <button @click="open=!open" class="flex items-center justify-between w-full p-2 bg-[#F58220] rounded hover:bg-[#F58220]">
-            <span><i class="fa-solid fa-layer-group"></i> Catégories</span>
+            <span><i class="fa-solid fa-layer-group"></i> CATEGORIE</span>
             <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
           </button>
           <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
-            <li><a href="{% url 'liste_categories' %}" class="block px-2 py-1 rounded  hover:bg-[#F58220]">Liste</a></li>
-            <li><a href="#" class="block px-2 py-1 rounded hover:bg-[#F58220]">Ajouter</a></li>
+            <li><a href="{% url 'liste_categories' %}" class="block px-2 py-1 rounded  hover:bg-[#F58220]"><i class="fa-solid text-white fa-arrow-right"></i>LISTE DES CATEGORIES</a></li>
+            <li><a href="#" class="block px-2 py-1 rounded hover:bg-[#F58220]"><i class="fa-solid text-white fa-arrow-right"></i>AJOUTER UNE CATEGORIE</a></li>
           </ul>
         </li>
 
         <!-- Matériels -->
         <li x-data="{open:false}">
           <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
-            <span><i class="fa-solid fa-house-laptop"></i> MATERIEL</span>
+            <span><i class="fa-solid fa-house-laptop"></i> EQUIPEMENTS</span>
             <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
           </button>
           <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
-            <li><a href="{% url 'materiel_list' %}" class="block px-2 py-1 rounded hover:bg-[#F58220]">LISTE</a></li>
-            <li><a href="#" class="block px-2 py-1 rounded hover:bg-[#F58220]">Ajouter</a></li>
+            <li><a href="{% url 'materiel_list' %}" class="block px-2 py-1 rounded hover:bg-[#F58220]"><i class="fa-solid text-white fa-arrow-right"></i>LISTES DES EQUIPEMENSTS</a></li>
+            <li><a href="#" class="block px-2 py-1 rounded hover:bg-[#F58220]"><i class="fa-solid text-white fa-arrow-right"></i>Ajouter</a></li>
           </ul>
         </li>
 
         <!-- Approvisionnements -->
         <li x-data="{open:false}">
           <button @click="open=!open" class="flex items-center justify-between w-full p-2 rounded hover:bg-[#F58220]">
-            <span><i class="fa-solid fa-cart-shopping"></i> RECUPERATION</span>
+            <span><i class="fa-solid fa-cart-shopping"></i> MAGAZIN</span>
             <i :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
           </button>
           <ul x-show="open" x-transition class="ml-6 mt-2 space-y-2">
-            <li><a href="{% url 'liste_appros' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>HISTORIQUE</a></li>
-            <li><a href="{% url 'nouvel_approvisionnement' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>ENREGISTRER UNE RECEPTION </a></li>
+            <li><a href="{% url 'liste_appros' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>HISTORIQUE DES SORTIES</a></li>
+            <li><a href="{% url 'nouvel_approvisionnement' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>ENREGISTRER UNE SORTIE</a></li>
             <li><a href="{% url 'rapport_approvisionnement' %}" class="block px-2 py-1 text-[#F58220] rounded hover:bg-[#F58220] hover:text-white"><i class="fa-solid text-white fa-arrow-right"></i>RAPPORT</a></li>
           </ul>
         </li>

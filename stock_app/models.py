@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
-
+from phonenumber_field.modelfields import PhoneNumberField # pyright: ignore[reportMissingImports]
 
 class Utilisateur(models.Model):
     nom = models.CharField(max_length=40)
@@ -25,43 +25,50 @@ class Materiel(models.Model):
     modal = models.CharField(max_length=100, default="modèle")
     
     def __str__(self):
-        return f"{self.categorie} -{self.fabricant} - {self.modal}"
+        return f"{self.categorie} - {self.fabricant} - {self.modal}"
 
+from django.db import models
+
+class Direction(models.Model):
+    nom = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nom
+
+
+class Departement(models.Model):
+    nom = models.CharField(max_length=100)
+    direction = models.ForeignKey(Direction, on_delete=models.CASCADE, related_name="departements")
+
+    def __str__(self):
+        return f"{self.nom} ({self.direction.nom})"
+
+
+class Service(models.Model):
+    nom = models.CharField(max_length=100)
+    departement = models.ForeignKey(Departement, on_delete=models.CASCADE, related_name="services")
+
+    def __str__(self):
+        return f"{self.nom} ({self.departement.nom})"
 
 class Demande(models.Model):
-    DIRECTIONS = [
-        ("DG", "Direction Générale"),
-        ("DRH", "Direction Ressources Humaines"),
-        ("DAF", "Direction Administratif Financier"),
-        ("DIS", "Direction Infrastructure Système"),
-        ("DCO", "Direction Commerciale"),
-    ]
-    DEPARTEMENTS = [
-        ("DSI", "Département Système Information"),
-        ("DRF", "Département Réseaux Fixe"),
-        ("DRM", "Département Réseaux Mobile"),
-        
-    ]
-    SERVICES = [
-        ("SPI", "Service Production Informatique"),
-        ("SIS", "Systèmes"),
-        ("SUP", "Support"),
-    ]
-    CENTRES = [
-        ("CBRG", "Centre Bureautique Reseau Global"),
-        ("KAY", "Kayes"),
-        ("GAO", "Gao"),
-    ]
+
 
     prenom = models.CharField(max_length=40)
     nom = models.CharField(max_length=40)
     email = models.EmailField(max_length=50)
-    direction = models.CharField(max_length=100, choices=DIRECTIONS)
-    departement = models.CharField(max_length=100, choices=DEPARTEMENTS)
-    service = models.CharField(max_length=100, choices=SERVICES)
-    centre = models.CharField(max_length=100, choices=CENTRES)
+
+    direction = models.ForeignKey(Direction, on_delete=models.CASCADE)
+    departement = models.ForeignKey(Departement, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+   
+
+    tel = PhoneNumberField(null=True, blank=True, unique=True)
+
+
+
     motif = models.TextField(max_length=255)
-    materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
+    materiel = models.ForeignKey("Materiel", on_delete=models.CASCADE)
     quantite = models.PositiveIntegerField()
     statut = models.CharField(
         max_length=20,
@@ -96,33 +103,18 @@ class ApproMateriel(models.Model):
 
 
 class Attribution(models.Model):
-    DIRECTIONS = [
-        ("DG", "Direction Générale"),
-        ("DRH", "Direction Ressources Humaines"),
-        ("DAF", "Direction Administratif Financier"),
-        ("DIS", "Direction Infrastructure Système"),
-        ("DCO", "Direction Commerciale"),
-    ]
-    DEPARTEMENTS = [
-        ("DSI", "Département Système Information"),
-        ("DRF", "Département Réseaux Fixe"),
-        ("DRM", "Département Réseaux Mobile"),
-        
-    ]
-    SERVICES = [
-        ("SPI", "Service Production Informatique"),
-        ("SIS", "Systèmes"),
-        ("SUP", "Support"),
-    ]
     date_attri = models.DateTimeField(auto_now_add=True)
-    ref = models.CharField(max_length=20,null=True,blank=True)
-    prenom = models.CharField(max_length=40,null=True,blank=True)
-    nom = models.CharField(max_length=40,null=True,blank=True)
-    email = models.EmailField(max_length=50,null=True,blank=True)
-    direction = models.CharField(max_length=100, choices=DIRECTIONS,null=True,blank=True)
-    departement = models.CharField(max_length=100, choices=DEPARTEMENTS,null=True,blank=True)
-    service = models.CharField(max_length=100, choices=SERVICES,null=True,blank=True)
-    locality = models.CharField(max_length=20,null=True,blank=True)
+    ref = models.CharField(max_length=20, null=True, blank=True)
+    prenom = models.CharField(max_length=40, null=True, blank=True)
+    nom = models.CharField(max_length=40, null=True, blank=True)
+    email = models.EmailField(max_length=50, null=True, blank=True)
+
+    # === Remplacer les CharFields par des ForeignKey ===
+    direction = models.ForeignKey(Direction, on_delete=models.SET_NULL, null=True, blank=True)
+    departement = models.ForeignKey(Departement, on_delete=models.SET_NULL, null=True, blank=True)
+    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, blank=True)
+
+    locality = models.CharField(max_length=20, null=True, blank=True)
     serie = models.CharField(max_length=50, null=True, blank=True)
     etat = models.CharField(
         max_length=20,
@@ -131,22 +123,22 @@ class Attribution(models.Model):
             ("pass", "PASSABLE"),
             ("endo", "ENDOMMAGER"),
         ],
-        default="bon", )
-    
+        default="bon",
+    )
+
     utilisateur = models.ForeignKey(Utilisateur, on_delete=models.SET_NULL, null=True)
-    
     demande = models.ForeignKey(
         Demande, on_delete=models.SET_NULL, null=True, blank=True,
         help_text="Demande à l’origine de cette attribution"
     )
-
     approvisionnement = models.ForeignKey(
         Approvisionnement, on_delete=models.SET_NULL, null=True, blank=True,
         help_text="Approvisionnement dont provient le matériel"
     )
-    
+
     def __str__(self):
         return f"Attribution du {self.date_attri.strftime('%Y-%m-%d %H:%M')}"
+
 
 
 class AttribuMateriel(models.Model):

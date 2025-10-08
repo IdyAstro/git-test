@@ -1,39 +1,28 @@
-{% extends "demandes/base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="p-6 max-w-4xl mx-auto">
-  <!-- Header -->
-  <h1 class="text-2xl font-bold text-[#004F9F] mb-6 flex items-center gap-2">
-    ➕ Nouvelle Demande
+  <h1 class="flex justify-center text-2xl font-bold text-[#004F9F] mb-6 flex items-center gap-2">
+    {% if form.instance.pk %}✏️ Modifier Demande{% else %}➕ NOUVELLE DEMANDE{% endif %}
   </h1>
-  
-  <!-- Messages Django -->
+
   {% if messages %}
     <div class="mb-4 space-y-2">
       {% for message in messages %}
         <div class="
           px-4 py-2 rounded-lg text-sm font-medium shadow-md
-          {% if message.tags == 'error' %}
-              bg-red-100 text-red-800 border border-red-300
-          {% elif message.tags == 'success' %}
-              bg-[#E6F0FA] text-[#004F9F] border border-[#B3D4F2]
-          {% elif message.tags == 'warning' %}
-              bg-yellow-100 text-yellow-800 border border-yellow-300
-          {% else %}
-              bg-blue-100 text-blue-800 border border-blue-300
-          {% endif %}
-        ">
+          {% if message.tags == 'error' %} bg-red-100 text-red-800 border border-red-300
+          {% elif message.tags == 'success' %} bg-[#E6F0FA] text-[#004F9F] border border-[#B3D4F2]
+          {% else %} bg-blue-100 text-blue-800 border border-blue-300 {% endif %}">
           {{ message }}
         </div>
       {% endfor %}
     </div>
   {% endif %}
 
-  <!-- Formulaire Wizard -->
   <form method="post" class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
     {% csrf_token %}
 
-    <!-- Erreurs globales -->
     {% if form.errors %}
       <div class="bg-red-100 text-red-700 p-3 rounded-lg border border-red-300 mb-4">
         ⚠️ Corrigez les erreurs ci-dessous
@@ -42,55 +31,78 @@
 
     <!-- Progress bar -->
     <div class="flex justify-between mb-6">
-      <div class="step-indicator flex-1 text-center">
-        <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center bg-[#004F9F] text-white">1</div>
-        <p class="text-sm mt-2">Infos perso</p>
-      </div>
-      <div class="step-indicator flex-1 text-center">
-        <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center bg-gray-300 text-gray-600">2</div>
-        <p class="text-sm mt-2">Infos pro</p>
-      </div>
-      <div class="step-indicator flex-1 text-center">
-        <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center bg-gray-300 text-gray-600">3</div>
-        <p class="text-sm mt-2">Autres infos</p>
-      </div>
+      {% for i in "123"|make_list %}
+        <div class="step-indicator flex-1 text-center">
+          <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center {% if forloop.first %}bg-[#004F9F] text-white{% else %}bg-gray-300 text-gray-600{% endif %}">{{ i }}</div>
+          <p class="text-sm mt-2">
+            {% if i == "1" %}Infos perso{% elif i == "2" %}Infos pro{% else %}Autres infos{% endif %}
+          </p>
+        </div>
+      {% endfor %}
     </div>
 
-    <!-- Slides -->
+    <!-- Step 1 -->
     <div id="step-1" class="step">
       <h2 class="text-lg font-semibold text-[#004F9F] mb-4 border-b pb-2">🧑 Informations personnelles</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {% for field in form %}
-          {% if field.name in "prenom,nom,email" %}
+          {% if field.name in "prenom,nom,email,tel" %}
             <div>
               <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">{{ field.label }}</label>
               {{ field }}
-              {% if field.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>
-              {% endif %}
+              {% if field.errors %}<p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>{% endif %}
             </div>
           {% endif %}
         {% endfor %}
       </div>
     </div>
 
+    <!-- Step 2 -->
     <div id="step-2" class="step hidden">
       <h2 class="text-lg font-semibold text-[#004F9F] mb-4 border-b pb-2">🏢 Informations professionnelles</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {% for field in form %}
-          {% if field.name in "direction,departement,service,centre" %}
-            <div>
-              <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">{{ field.label }}</label>
-              {{ field }}
-              {% if field.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>
-              {% endif %}
-            </div>
-          {% endif %}
-        {% endfor %}
+
+        <!-- Direction -->
+        <div>
+          <label for="id_direction" class="block text-gray-700 font-medium mb-1">Direction</label>
+          <select name="direction" id="id_direction" class="w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:ring focus:ring-teal-200">
+            <option value="">---------</option>
+            {% for d in form.fields.direction.queryset %}
+              <option value="{{ d.id }}" {% if form.instance.direction and form.instance.direction.id == d.id %}selected{% endif %}>{{ d.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Departement -->
+        <div>
+          <label for="id_departement" class="block text-gray-700 font-medium mb-1">Département</label>
+          <select name="departement" id="id_departement" class="w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:ring focus:ring-teal-200">
+            <option value="">---------</option>
+            {% if form.instance.departement %}
+              <option value="{{ form.instance.departement.id }}" selected>{{ form.instance.departement.nom }}</option>
+            {% endif %}
+          </select>
+        </div>
+
+        <!-- Service -->
+        <div>
+          <label for="id_service" class="block text-gray-700 font-medium mb-1">Service</label>
+          <select name="service" id="id_service" class="w-full rounded-xl border border-gray-300 p-3 shadow-sm focus:ring focus:ring-teal-200">
+            <option value="">---------</option>
+            {% if form.instance.service %}
+              <option value="{{ form.instance.service.id }}" selected>{{ form.instance.service.nom }}</option>
+            {% endif %}
+          </select>
+        </div>
+
+        <!-- Centre -->
+        <div>
+          {{ form.centre }}
+        </div>
       </div>
     </div>
 
+    <!-- Step 3 -->
     <div id="step-3" class="step hidden">
       <h2 class="text-lg font-semibold text-[#004F9F] mb-4 border-b pb-2">📄 Autres informations</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -99,71 +111,92 @@
             <div>
               <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">{{ field.label }}</label>
               {{ field }}
-              {% if field.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>
-              {% endif %}
+              {% if field.errors %}<p class="text-red-600 text-sm mt-1">{{ field.errors|striptags }}</p>{% endif %}
             </div>
           {% endif %}
         {% endfor %}
       </div>
     </div>
 
-    <!-- Boutons navigation -->
+    <!-- Navigation buttons -->
     <div class="flex justify-between items-center pt-6">
-      <button type="button" id="prevBtn" class="hidden bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg shadow transition">
-        ⬅️ Précédent
-      </button>
-
-      <button type="button" id="nextBtn" class="bg-[#004F9F] hover:bg-blue-900 text-white px-6 py-2 rounded-lg shadow transition ml-auto">
-        Suivant ➡️
-      </button>
-
-      <button type="submit" id="submitBtn" class="hidden bg-green-600 hover:bg-green-800 text-white px-6 py-2 rounded-lg shadow transition ml-auto">
-        ✅ Enregistrer
-      </button>
+      <button type="button" id="prevBtn" class="hidden bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg shadow transition">⬅️ Précédent</button>
+      <button type="button" id="nextBtn" class="bg-[#004F9F] hover:bg-blue-900 text-white px-6 py-2 rounded-lg shadow transition ml-auto">Suivant ➡️</button>
+      <button type="submit" id="submitBtn" class="hidden bg-green-600 hover:bg-green-800 text-white px-6 py-2 rounded-lg shadow transition ml-auto">✅ Enregistrer</button>
     </div>
   </form>
 </div>
 
-<!-- Script -->
+<!-- Scripts -->
 <script>
-  let currentStep = 1;
-  const totalSteps = 3;
+let currentStep = 1;
+const totalSteps = 3;
+const steps = document.querySelectorAll(".step");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const submitBtn = document.getElementById("submitBtn");
+const indicators = document.querySelectorAll(".step-indicator div");
 
-  const steps = document.querySelectorAll(".step");
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const submitBtn = document.getElementById("submitBtn");
-  const indicators = document.querySelectorAll(".step-indicator div");
+function showStep(step) {
+  steps.forEach((el,i)=>el.classList.toggle("hidden", i!==step-1));
+  indicators.forEach((el,i)=>{
+    el.classList.toggle("bg-[#004F9F]", i===step-1);
+    el.classList.toggle("text-white", i===step-1);
+    el.classList.toggle("bg-gray-300", i!==step-1);
+    el.classList.toggle("text-gray-600", i!==step-1);
+  });
+  prevBtn.classList.toggle("hidden", step===1);
+  nextBtn.classList.toggle("hidden", step===totalSteps);
+  submitBtn.classList.toggle("hidden", step!==totalSteps);
+}
 
-  function showStep(step) {
-    steps.forEach((el, i) => {
-      el.classList.toggle("hidden", i !== step - 1);
-      indicators[i].classList.toggle("bg-[#004F9F]", i === step - 1);
-      indicators[i].classList.toggle("text-white", i === step - 1);
-      indicators[i].classList.toggle("bg-gray-300", i !== step - 1);
-      indicators[i].classList.toggle("text-gray-600", i !== step - 1);
-    });
+nextBtn.addEventListener("click", ()=>{if(currentStep<totalSteps){currentStep++;showStep(currentStep);}});
+prevBtn.addEventListener("click", ()=>{if(currentStep>1){currentStep--;showStep(currentStep);}});
+showStep(currentStep);
 
-    prevBtn.classList.toggle("hidden", step === 1);
-    nextBtn.classList.toggle("hidden", step === totalSteps);
-    submitBtn.classList.toggle("hidden", step !== totalSteps);
+// --- Dynamique direction/departement/service ---
+document.addEventListener('DOMContentLoaded', function(){
+  const dir = document.getElementById('id_direction');
+  const dep = document.getElementById('id_departement');
+  const serv = document.getElementById('id_service');
+
+  function loadDepartements(dirId, selectedId=null){
+    fetch(`/ajax/load-departements/?direction_id=${dirId}`)
+      .then(res=>res.json())
+      .then(data=>{
+        dep.innerHTML='<option value="">---------</option>';
+        serv.innerHTML='<option value="">---------</option>';
+        data.forEach(d=>{
+          const opt=document.createElement('option');
+          opt.value=d.id;
+          opt.textContent=d.nom;
+          if(selectedId && selectedId==d.id) opt.selected=true;
+          dep.appendChild(opt);
+        });
+      });
   }
 
-  nextBtn.addEventListener("click", () => {
-    if (currentStep < totalSteps) {
-      currentStep++;
-      showStep(currentStep);
-    }
-  });
+  function loadServices(depId, selectedId=null){
+    fetch(`/ajax/load-services/?departement_id=${depId}`)
+      .then(res=>res.json())
+      .then(data=>{
+        serv.innerHTML='<option value="">---------</option>';
+        data.forEach(s=>{
+          const opt=document.createElement('option');
+          opt.value=s.id;
+          opt.textContent=s.nom;
+          if(selectedId && selectedId==s.id) opt.selected=true;
+          serv.appendChild(opt);
+        });
+      });
+  }
 
-  prevBtn.addEventListener("click", () => {
-    if (currentStep > 1) {
-      currentStep--;
-      showStep(currentStep);
-    }
-  });
+  // Initialisation si édition
+  if(dir.value) loadDepartements(dir.value, {{ form.instance.departement.id|default:"null" }});
+  if(dep.value) loadServices(dep.value, {{ form.instance.service.id|default:"null" }});
 
-  showStep(currentStep);
+  dir.addEventListener('change', ()=>loadDepartements(dir.value));
+  dep.addEventListener('change', ()=>loadServices(dep.value));
+});
 </script>
 {% endblock %}

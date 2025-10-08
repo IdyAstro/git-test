@@ -1,66 +1,82 @@
-{% extends "appro/base.html" %}
+{% extends "base.html" %}
 {% block content %}
-<div class="p-6">
-  <h1 class="text-xl font-bold mb-4">📦 RAPPORT DEPLOIEMENT & RECUPERATION</h1>
+<div class="p-6 max-w-7xl mx-auto">
 
-  <a href="?export=excel" class="px-4 py-2 bg-green-600 text-white rounded">Exporter Excel</a>
+  <!-- Titre principal -->
+  <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-8">
+    📦 RAPPORT DES SORTIES DU MAGASIN
+  </h1>
 
-  <!-- Approvisionnements -->
-  <h2 class="text-lg font-semibold mt-6">RECUPERATION</h2>
-  <table class="table-auto w-full border">
-    <thead class="bg-gray-200">
-      <tr>
-        <th class="px-2 py-1 border">Date</th>
-        <th class="px-2 py-1 border">Utilisateur</th>
-        <th class="px-2 py-1 border">Matériel</th>
-        <th class="px-2 py-1 border">Quantité</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for appro in approvisionnements %}
-        {% for ligne in appro.appromateriel_set.all %}
-        <tr class="border">
-          <td class="px-2 py-1">{{ appro.date_appro|date:"Y-m-d" }}</td>
-          <td class="px-2 py-1">{{ appro.utilisateur.nom }}</td>
-          <td class="px-2 py-1">{{ ligne.materiel }}</td>
-          <td class="px-2 py-1">{{ ligne.quantite }}</td>
-        </tr>
+  <!-- Formulaire de filtre -->
+  <form method="get" class="mb-8 bg-white shadow rounded-lg p-4 flex flex-col md:flex-row items-center gap-4">
+    <div>
+      <label for="mois" class="block text-sm font-medium text-gray-700">Mois</label>
+      <select id="mois" name="mois" class="border rounded-lg p-2">
+        <option value="">-- Tous --</option>
+        {% for num, nom in mois_noms %}
+          <option value="{{ num }}" {% if mois|default:'' == num|stringformat:"s" %}selected{% endif %}>
+            {{ nom }}
+          </option>
         {% endfor %}
-      {% endfor %}
-    </tbody>
-  </table>
+      </select>
+    </div>
 
-  <!-- Attributions -->
-  <h2 class="text-lg font-semibold mt-6">DEPLOIEMENT</h2>
-  <table class="table-auto w-full border">
-    <thead class="bg-gray-200">
-      <tr>
-        <th class="px-2 py-1 border">Date Deploiement</th>
-     
-        <th class="px-2 py-1 border">Direction</th>
-        <th class="px-2 py-1 border">Utilisateur</th>
-        <th class="px-2 py-1 border">Technicien</th>
-        <th class="px-2 py-1 border">Matériel</th>
-        <th class="px-2 py-1 border">Quantité</th>
-        <th class="px-2 py-1 border">État</th>
-      </tr>
-    </thead>
-    <tbody>
-     
-      {% for attri in attributions %}
-        {% for ligne in attri.attribumateriel_set.all %}
-        <tr class="border">
-          <td class="px-2 py-1">{{ attri.date_attri|date:"Y-m-d" }}</td>
-          <td class="px-2 py-1">{{ attri.direction }}</td>
-          <td class="px-2 py-1">{{ attri.prenom }} {{ attri.nom }}</td>
-          <td class="px-2 py-1">{{ attri.utilisateur.nom }}</td>
-          <td class="px-2 py-1">{{ ligne.materiel }}</td>
-          <td class="px-2 py-1">{{ ligne.quantite }}</td>
-          <td class="px-2 py-1">{{ attri.get_etat_display }}</td>
-        </tr>
-        {% endfor %}
-      {% endfor %}
-    </tbody>
-  </table>
+    <div>
+      <label for="annee" class="block text-sm font-medium text-gray-700">Année</label>
+      <input type="number" id="annee" name="annee"
+             value="{{ annee|default:now.year }}"
+             class="border rounded-lg p-2">
+    </div>
+
+    <div class="flex gap-3 mt-4 md:mt-6">
+      <button type="submit" class="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">
+        🔎 Filtrer
+      </button>
+      <a href="?export=excel{% if mois %}&mois={{ mois }}{% endif %}{% if annee %}&annee={{ annee }}{% endif %}"
+         class="px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+        ⬇️ Exporter Excel
+      </a>
+    </div>
+  </form>
+
+  <!-- Carte contenant le tableau -->
+  <div class="bg-white shadow-lg rounded-2xl overflow-hidden">
+    <div class="p-4 border-b bg-gradient-to-r from-green-600 to-green-400">
+      <h2 class="text-lg font-semibold text-white">📋 Sorties du magasin</h2>
+    </div>
+
+    <!-- Tableau -->
+    <div class="overflow-x-auto">
+      <table class="table-auto w-full text-sm text-left">
+        <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+          <tr>
+            <th class="px-4 py-3">Date</th>
+            <th class="px-4 py-3">Technicien</th>
+            <th class="px-4 py-3">Équipement</th>
+            <th class="px-4 py-3">Quantité</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for appro in approvisionnements %}
+            {% for ligne in appro.appromateriel_set.all %}
+              <tr class="hover:bg-gray-50 transition">
+                <td class="px-4 py-2 text-gray-800">{{ appro.date_appro|date:"Y-m-d" }}</td>
+                <td class="px-4 py-2 text-gray-800">{{ appro.utilisateur.nom }}</td>
+                <td class="px-4 py-2 text-gray-600">{{ ligne.materiel }}</td>
+                <td class="px-4 py-2 font-semibold text-green-600">{{ ligne.quantite }}</td>
+              </tr>
+            {% endfor %}
+          {% empty %}
+            <tr>
+              <td colspan="4" class="px-4 py-4 text-center text-gray-500 italic">
+                Aucun sortie trouvée pour ce filtre.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

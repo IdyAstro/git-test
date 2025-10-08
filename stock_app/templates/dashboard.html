@@ -1,89 +1,210 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
-<div class="p-6">
-    <h1 class="text-2xl font-bold text-[#005baa] mb-6">📊 Tableau de bord</h1>
+<div class="p-4 max-w-7xl mx-auto space-y-6">
 
-    <!-- Statistiques globales -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white shadow-md rounded-2xl p-4 text-center ">
-            <h2 class="text-lg font-semibold uppercase">Stock total</h2>
-            <p class="text-2xl font-bold text-green-600">{{ total_stock }}</p>
-        </div>
-        <div class="bg-white shadow-md rounded-2xl p-4 text-center">
-            <h2 class="text-lg font-semibold uppercase">Matériels</h2>
-            <p class="text-2xl font-bold">{{ total_materiels }}</p>
-        </div>
-        <div class="bg-white shadow-md rounded-2xl p-4 text-center">
-            <h1 class="text-lg font-semibold uppercase">RECEPTION</h>
-            <p class="text-2xl font-bold text-blue-600">{{ total_appros }}</p>
-        </div>
-        <div class="bg-white shadow-md rounded-2xl p-4 text-center">
-            <h2 class="text-lg font-semibold uppercase">Attributions</h2>
-            <p class="text-2xl font-bold text-red-600">{{ total_attris }}</p>
-        </div>
+  <!-- Stats Cards avec icônes et tendances -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Stock -->
+    <div class="bg-white shadow-sm hover:shadow-md rounded-lg p-4 flex justify-between items-center transition">
+      <div>
+        <h2 class="text-gray-500 text-sm font-semibold">EQUIPEMENSTS NON DEPLOYES</h2>
+        <p class="text-2xl font-bold text-blue-600">{{ total_stock }}</p>
+        <p class="text-xs text-gray-400 mt-1">+3.5% vs mois dernier</p>
+      </div>
+      <div class="p-3 bg-blue-100 rounded-full">
+        <i class="fa fa-box text-blue-600"></i>
+      </div>
     </div>
+    <!-- Approvisionnements -->
+    <div class="bg-white shadow-sm hover:shadow-md rounded-lg p-4 flex justify-between items-center transition">
+      <div>
+        <h2 class="text-gray-500 text-sm font-semibold">SORTIE DU MAGASIN</h2>
+        <p class="text-2xl font-bold text-green-600">{{ total_appros }}</p>
+        <p class="text-xs text-gray-400 mt-1">+8% ce trimestre</p>
+      </div>
+      <div class="p-3 bg-green-100 rounded-full">
+        <i class="fa fa-truck text-green-600"></i>
+      </div>
+    </div>
+    <!-- Attributions -->
+    <div class="bg-white shadow-sm hover:shadow-md rounded-lg p-4 flex justify-between items-center transition">
+      <div>
+        <h2 class="text-gray-500 text-sm font-semibold">DEPLOIEMENTS </h2>
+        <p class="text-2xl font-bold text-red-600">{{ total_attris }}</p>
+        <p class="text-xs text-gray-400 mt-1">-2% vs semaine passée</p>
+      </div>
+      <div class="p-3 bg-red-100 rounded-full">
+        <i class="fa fa-hand-holding text-red-600"></i>
+      </div>
+    </div>
+    <!-- Matériels -->
+    <div class="bg-white shadow-sm hover:shadow-md rounded-lg p-4 flex justify-between items-center transition">
+      <div>
+        <h2 class="text-gray-500 text-sm font-semibold">Types Equipements</h2>
+        <p class="text-2xl font-bold text-purple-600">{{ total_materiels }}</p>
+        <p class="text-xs text-gray-400 mt-1">Equipements enregistrés</p>
+      </div>
+      <div class="p-3 bg-purple-100 rounded-full">
+        <i class="fa fa-laptop text-purple-600"></i>
+      </div>
+    </div>
+  </div>
 
-    <!-- Graphiques -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white shadow-md rounded-2xl p-4">
-            <h2 class="font-semibold mb-2 uppercase">Répartition du stock par catégorie</h2>
-            <canvas id="stockCategorie"></canvas>
-        </div>
-        <div class="bg-white shadow-md rounded-2xl p-4">
-            <h2 class="font-semibold mb-2 uppercase">Demandes par statut</h2>
-            <canvas id="demandesStatut"></canvas>
-        </div>
+  <!-- Graphiques -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="bg-white shadow-sm rounded-lg p-4">
+      <h3 class="text-gray-700 text-sm font-semibold mb-3">📊 Equipements non deployés par catégorie</h3>
+      <canvas id="chartStock"></canvas>
     </div>
-    <!-- Stock par materiel -->
-    <div class="mt-6 bg-white shadow-md rounded-2xl p-4">
-        <h2 class="font-semibold mb-4 text-green-600 uppercase"> Stock superieure a 5</h2>
-        <ul>
-            {% for i in stock_par_materiel %}
-                <li>{{i.materiel.categorie}} {{i.materiel.fabricant}} {{ i.materiel.description }} {{i.materiel.modal}} : <span class="font-bold">{{ i.quantite }}</span></li>
-            {% empty %}
-                <li>Aucun stock</li>
-            {% endfor %}
-        </ul>
+    <div class="bg-white shadow-sm rounded-lg p-4">
+      <h3 class="text-gray-700 text-sm font-semibold mb-3">📌 Demandes par Statut</h3>
+      <canvas id="chartDemandes"></canvas>
     </div>
-    <!-- Stock critique -->
-    <div class="mt-6 bg-white shadow-md rounded-2xl p-4">
-        <h2 class="font-semibold mb-4 text-red-600 uppercase">⚠️ Stock critique</h2>
-        <ul>
-            {% for s in stock_critique %}
-                <li>{{s.materiel.categorie}} {{s.materiel.fabricant}} {{ s.materiel.description }} {{s.materiel.modal}} : <span class="font-bold">{{ s.quantite }}</span></li>
-            {% empty %}
-                <li>Aucun stock critique</li>
-            {% endfor %}
-        </ul>
+  </div>
+
+  <!-- Top Appro / Attributions -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="bg-white shadow-sm rounded-lg p-4">
+      <h3 class="text-gray-700 text-sm font-semibold mb-3">DETAILS SORTIES DU MAGASIN</h3>
+      <ul class="divide-y divide-gray-100 text-sm">
+        {% for item in top_appros %}
+        <li class="py-2 flex justify-between hover:bg-gray-50 transition">
+          <span>{{ item.materiel__description }}</span>
+          <span class="font-bold text-green-600">{{ item.total }}</span>
+        </li>
+        {% empty %}
+        <p class="text-gray-400">Aucune sortie du magasin.</p>
+        {% endfor %}
+      </ul>
     </div>
+    <div class="bg-white shadow-sm rounded-lg p-4">
+      <h3 class="text-gray-700 text-sm font-semibold mb-3">DEPLOIEMENTS</h3>
+      <ul class="divide-y divide-gray-100 text-sm">
+        {% for item in top_attris %}
+        <li class="py-2 flex justify-between hover:bg-gray-50 transition">
+          <span>{{ item.materiel__fabricant }} {{ item.materiel__description }}</span>
+          <span class="font-bold text-red-600">{{ item.total }}</span>
+        </li>
+        {% empty %}
+        <p class="text-gray-400">Aucun déployement.</p>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Stock critique 
+  <div class="bg-white shadow-sm rounded-lg p-4">
+    <h3 class="text-gray-700 text-sm font-semibold mb-3">⚠️ Stock Critique (&lt;5)</h3>
+    {% if stock_critique %}
+    <table class="min-w-full table-auto border border-gray-200 text-sm rounded-lg overflow-hidden">
+      <thead class="bg-gray-100 text-gray-600">
+        <tr>
+          <th class="px-2 py-2 border">Matériel</th>
+          <th class="px-2 py-2 border">Quantité</th>
+          <th class="px-2 py-2 border">Catégorie</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stock_critique %}
+        <tr class="hover:bg-red-50 transition">
+          <td class="px-2 py-2 border">{{ s.materiel.description }}</td>
+          <td class="px-2 py-2 border font-bold text-red-600">{{ s.quantite }}</td>
+          <td class="px-2 py-2 border">{{ s.materiel.categorie.label }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-green-600 font-semibold text-sm">✅ Aucun stock critique.</p>
+    {% endif %}
+  </div>
+-->
+  <!-- Stock par matériel avec pagination -->
+  <div class="bg-white shadow-sm rounded-lg p-4">
+    <h3 class="text-gray-700 text-sm font-semibold mb-3">📦 EQUIPEMENSTS RESTANTS A DEPLOYER</h3>
+    <table class="min-w-full table-auto border border-gray-200 text-sm rounded-lg overflow-hidden">
+      <thead class="bg-gray-100 text-gray-600">
+        <tr>
+          <th class="px-2 py-2 border">Equipements</th>
+          <th class="px-2 py-2 border">Quantité</th>
+          <th class="px-2 py-2 border">Catégorie</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stock_par_materiel %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-2 py-2 border">{{ s.materiel }}</td>
+          <td class="px-2 py-2 border">{{ s.quantite }}</td>
+          <td class="px-2 py-2 border">{{ s.materiel.categorie.label }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="mt-3 flex items-center justify-between text-sm">
+      <div>
+        {% if stock_par_materiel.has_previous %}
+          <a href="?page={{ stock_par_materiel.previous_page_number }}" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">⬅ Précédent</a>
+        {% endif %}
+      </div>
+      <span class="px-3 py-1">{{ stock_par_materiel.number }} / {{ stock_par_materiel.paginator.num_pages }}</span>
+      <div>
+        {% if stock_par_materiel.has_next %}
+          <a href="?page={{ stock_par_materiel.next_page_number }}" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">Suivant ➡</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
 </div>
 
+<!-- Graphiques -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Stock par catégorie
-    new Chart(document.getElementById("stockCategorie"), {
-        type: "pie",
-        data: {
-            labels: {{ chart_stock_labels|safe }},
-            datasets: [{
-                data: {{ chart_stock_data|safe }},
-                backgroundColor: ["#3b82f6","#f59e0b","#10b981","#ef4444","#8b5cf6"]
-            }]
-        }
-    });
+  // Stock par catégorie
+  const ctxStock = document.getElementById('chartStock').getContext('2d');
+  new Chart(ctxStock, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_stock_labels|safe }},
+      datasets: [{
+        label: 'Quantité',
+        data: {{ chart_stock_data|safe }},
+        backgroundColor: 'rgba(59,130,246,0.7)',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+      scales: {
+        x: { ticks: { maxRotation:0, minRotation:0, font:{size:11} } },
+        y: { ticks: { font:{size:11} }, beginAtZero: true }
+      }
+    }
+  });
 
-    // Demandes par statut
-    new Chart(document.getElementById("demandesStatut"), {
-        type: "bar",
-        data: {
-            labels: {{ chart_demande_labels|safe }},
-            datasets: [{
-                label: "Nombre de demandes",
-                data: {{ chart_demande_data|safe }},
-                backgroundColor: "#2563eb"
-            }]
-        }
-    });
+  // Demandes par statut
+  const ctxDemandes = document.getElementById('chartDemandes').getContext('2d');
+  new Chart(ctxDemandes, {
+    type: 'pie',
+    data: {
+      labels: {{ chart_demande_labels|safe }},
+      datasets: [{
+        data: {{ chart_demande_data|safe }},
+        backgroundColor: [
+          'rgba(34,197,94,0.7)',
+          'rgba(251,191,36,0.7)',
+          'rgba(239,68,68,0.7)'
+        ],
+        borderWidth: 1,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels:{font:{size:11}} }, tooltip: { enabled: true } }
+    }
+  });
 </script>
 {% endblock %}
